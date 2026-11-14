@@ -1,9 +1,3 @@
-/* Hallmark · shape: app screen · genre: modern-minimal · theme: Dusk (by request)
- * nav: sidebar for admins (8 destinations), top bar for clients (4) · signature: the write ledger, said beside written · states: loading, empty, error, full · dusk: no photograph (app screen)/periwinkle-apricot/glass
- * axes: dark/grotesk-sans/cool · posture: committed · contrast: pass · v2.0.0 */
-/* Hallmark · pre-emit critique: P4 H4 E4 S5 R4 V4 · weakest: H, many dense screens; every page opens with one head and one line, and apricot appears only where something is owed */
-/* Hallmark · dismissed 29 · Dusk's material is smoked glass with a lit edge: --glass over slate always paired with --glass-hi, one layer, never glass on glass */
-/* Hallmark · dismissed F7 · the pill radius here draws status dots, nav links and counters, all controls or signals, never boxes */
 :root {
   color-scheme: dark;
   --space-3xs: 2px; --space-2xs: 4px; --space-xs: 8px; --space-sm: 12px; --space-md: 16px; --space-lg: 24px; --space-xl: 40px; --space-2xl: 64px; --space-3xl: 96px;

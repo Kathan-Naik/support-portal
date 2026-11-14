@@ -11,6 +11,5 @@ app/data/
 !.env.example
 
 # Tool output
-.hallmark/
 *.log
 *.tmp
