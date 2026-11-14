@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { api } from '../api.ts';
+import { Leaves } from '../components/Leaves.tsx';
 
 const DEMO = [
   { email: 'admin@support.example', label: 'Support admin', who: 'Deployment Engineer' },
@@ -23,6 +24,8 @@ export function Login({ onIn }: { onIn: () => void; from: string }) {
     } finally { setBusy(false); }
   };
   return (
+    <>
+    <Leaves />
     <main className="login" id="main">
       <div>
         <h1>Support for your AI phone agent.</h1>
@@ -53,5 +56,6 @@ export function Login({ onIn }: { onIn: () => void; from: string }) {
         </div>
       </div>
     </main>
+    </>
   );
 }
