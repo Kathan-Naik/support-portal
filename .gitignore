@@ -1,0 +1,16 @@
+# Dependencies and build output
+node_modules/
+app/dist/
+
+# Local data: the SQLite database and uploaded evidence are rebuilt by `npm run seed`
+app/data/
+
+# Secrets: copy app/.env.example to app/.env
+.env
+.env.*
+!.env.example
+
+# Tool output
+.hallmark/
+*.log
+*.tmp

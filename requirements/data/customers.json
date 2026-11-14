@@ -1,0 +1,46 @@
+[
+  {
+    "customer_id": "cust_a",
+    "name": "Sunrise Dental",
+    "business_type": "dental clinic",
+    "timezone": "America/Los_Angeles",
+    "booking_system": "BookWell",
+    "integration": "REST API (OAuth2 client credentials)",
+    "business_hours": "Mon-Fri 08:00-17:00",
+    "staff": [
+      "Dr. Patel",
+      "Dr. Nguyen",
+      "Dr. Alvarez"
+    ],
+    "go_live": "2026-06-15"
+  },
+  {
+    "customer_id": "cust_b",
+    "name": "Lakeside Auto Service",
+    "business_type": "auto repair shop",
+    "timezone": "America/Chicago",
+    "booking_system": "ShopDesk",
+    "integration": "REST API (API key)",
+    "business_hours": "Mon-Fri 08:00-17:00",
+    "staff": [
+      "Mike",
+      "Dana"
+    ],
+    "go_live": "2026-04-02"
+  },
+  {
+    "customer_id": "cust_c",
+    "name": "Maple Hair Studio",
+    "business_type": "hair salon",
+    "timezone": "America/New_York",
+    "booking_system": "SalonSuite",
+    "integration": "REST API (OAuth2 client credentials)",
+    "business_hours": "Mon-Fri 08:00-17:00",
+    "staff": [
+      "Jess",
+      "Andre",
+      "Priya"
+    ],
+    "go_live": "2026-08-20"
+  }
+]

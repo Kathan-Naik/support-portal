@@ -1,0 +1,38 @@
+{
+  "name": "support-portal",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Support portal for the AI phone agent: admin and client roles, flagged errors, logs, tickets, communications and a Pi-powered debug bot.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "seed": "node --disable-warning=ExperimentalWarning scripts/seed.ts",
+    "dev": "node --disable-warning=ExperimentalWarning scripts/dev.ts",
+    "dev:server": "node --disable-warning=ExperimentalWarning --watch server/index.ts",
+    "dev:client": "vite",
+    "build": "vite build",
+    "start": "node --disable-warning=ExperimentalWarning server/index.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.19.18",
+    "@mariozechner/pi-agent-core": "^0.73.1",
+    "@mariozechner/pi-ai": "^0.73.1",
+    "@mariozechner/pi-coding-agent": "^0.73.1",
+    "hono": "^4.10.4",
+    "typebox": "^1.1.24"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.28.0",
+    "typescript": "^5.7.2",
+    "vite": "^5.4.11"
+  }
+}

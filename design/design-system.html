@@ -1,0 +1,1098 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Call Explorer design system</title>
+<meta name="description" content="Tokens, status vocabulary and interactive components for Call Explorer, the ops tool that checks every AI phone call against its booking write.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Wix+Madefor+Display:wght@500;600&family=Wix+Madefor+Text:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Hallmark · shape: app screen · genre: modern-minimal · theme: Dusk (by request)
+ * nav: slate glass top bar, section links, sticky · signature: the write ledger, what the agent said beside what the booking system accepted · states: loading, empty, error, full · dusk: no photograph (app screen)/periwinkle-apricot/glass
+ * axes: dark/grotesk-sans/cool · posture: committed · contrast: pass · v2.0.0 */
+/* Hallmark · pre-emit critique: P4 H4 E4 S5 R4 V4 · weakest: R, the drawer, dialog and toast all use glass; kept to one glass layer each, never glass on glass */
+/* Hallmark · dismissed 29 · Dusk's material is smoked glass with a lit edge: --glass over slate always paired with --glass-hi, one layer, never glass on glass */
+/* Hallmark · dismissed F7 · the pill radius here draws status dots, nav links and the skip link, all controls or signals, never boxes */
+/* Hallmark · waive 39b · button.swatch is a colour card whose whole face copies its token · a swatch has to show the colour at a readable size, so the card is the hit target */
+/* Hallmark · dismissed F25 · under 40rem every calls row restacks into a labelled two-column block, the 375 capture shows no column off-screen */
+/* Hallmark · dismissed 49 · swatch buttons are two-line cards, name over role, wrapping is intended */
+/* Hallmark · dismissed 70 · the matched text is a transcript inside the embedded sample JSON, not a success message the page prints */
+:root {
+  color-scheme: dark;
+  --space-3xs: 2px; --space-2xs: 4px; --space-xs: 8px; --space-sm: 12px; --space-md: 16px; --space-lg: 24px; --space-xl: 40px; --space-2xl: 64px; --space-3xl: 96px;
+  --text-xs: 0.75rem; --text-sm: 0.875rem; --text-md: 1rem; --text-lg: 1.2rem; --text-xl: 1.44rem; --text-2xl: 1.728rem; --text-3xl: 2.25rem;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1); --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro: 120ms; --dur-short: 220ms; --dur-long: 420ms;
+  --container: 1440px; --gutter: 64px; --gap-columns: 32px;
+  --z-raised: 10; --z-sticky-nav: 300; --z-modal: 400; --z-toast: 500;
+  --color-paper: oklch(17.5% 0.014 268); --color-paper-2: oklch(21% 0.016 268); --color-paper-3: oklch(25% 0.017 268);
+  --color-ink: oklch(96% 0.006 75); --color-ink-2: oklch(85% 0.010 262); --color-muted: oklch(70% 0.016 262);
+  --color-rule: oklch(30% 0.016 266); --color-light: oklch(100% 0 0); --color-shade: oklch(10% 0.022 268);
+  --color-accent: oklch(77% 0.10 274); --color-accent-ink: oklch(19% 0.035 274); --color-accent-hi: oklch(84% 0.085 274);
+  --color-accent-deep: oklch(44% 0.13 274); --color-focus: oklch(80% 0.10 274);
+  --color-accent-2: oklch(83% 0.095 62);
+  --color-well: oklch(95.5% 0.008 75); --color-well-2: oklch(92% 0.010 75); --color-well-ink: oklch(21% 0.016 268); --color-well-muted: oklch(47% 0.016 265); --color-well-rule: oklch(87.5% 0.009 75); --color-card: oklch(99.5% 0.003 75);
+  --color-scrim: oklch(10% 0.022 268 / 0.62);
+  --color-lift: color-mix(in oklab, var(--color-light) 5%, transparent);
+  --color-lift-2: color-mix(in oklab, var(--color-light) 9%, transparent);
+  --color-owed: color-mix(in oklab, var(--color-accent-2) 10%, transparent);
+  --color-owed-line: color-mix(in oklab, var(--color-accent-2) 45%, transparent);
+  --glass: oklch(22% 0.018 268 / 0.72); --glass-blur: 22px;
+  --glass-hi: inset 0 1px 0 oklch(100% 0 0 / 0.10), inset 0 0 0 1px oklch(100% 0 0 / 0.06);
+  --shadow-card: 0 1px 0 oklch(100% 0 0 / 0.06) inset, 0 40px 80px -32px oklch(8% 0.02 268 / 0.7);
+  --shadow-well: 0 1px 2px oklch(20% 0.01 268 / 0.08);
+  --btn-edge: inset 0 1px 0 color-mix(in oklab, var(--color-light) 35%, transparent);
+  --font-display: "Wix Madefor Display", ui-sans-serif, system-ui, sans-serif; --font-body: "Wix Madefor Text", ui-sans-serif, system-ui, sans-serif;
+  --font-code: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --radius-card: 18px; --radius-inner: 10px; --radius-pill: 999px; --rule-hair: 1px; --rule-bar: 2px;
+  --tracking-display: -0.022em; --display-weight: 500;
+  --control: 44px;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html, body { overflow-x: clip; }
+html { scrollbar-color: var(--color-paper-3) var(--color-paper); scroll-padding-top: var(--space-3xl); scroll-behavior: smooth; }
+body { margin: 0; background: var(--color-paper); color: var(--color-ink); font-family: var(--font-body); font-size: 1.0625rem; line-height: 1.55; -webkit-font-smoothing: antialiased; caret-color: var(--color-accent); font-variant-numeric: tabular-nums; }
+::selection { background: var(--color-accent); color: var(--color-accent-ink); }
+:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 0.18em; text-decoration-color: var(--color-muted); }
+a:hover { color: var(--color-accent-hi); text-decoration-color: currentColor; }
+h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: var(--display-weight); font-synthesis: none; letter-spacing: var(--tracking-display); line-height: 1.08; overflow-wrap: break-word; min-width: 0; text-wrap: balance; }
+h1 { max-width: 20ch; font-size: var(--text-3xl); line-height: 1.04; }
+h2 { max-width: 30ch; font-size: var(--text-xl); }
+h3 { max-width: 40ch; font-size: var(--text-md); line-height: 1.25; }
+p { margin: 0; text-wrap: pretty; max-width: 68ch; }
+ul, ol { margin: 0; padding-left: var(--space-lg); display: grid; gap: var(--space-xs); max-width: 72ch; }
+[hidden] { display: none !important; }
+button, input, select, textarea { font: inherit; color: inherit; }
+b, strong { font-weight: 600; }
+code { font-family: var(--font-code); font-size: 0.86em; background: var(--color-lift); border-radius: var(--space-2xs); padding: 0 var(--space-2xs); overflow-wrap: anywhere; }
+small, .small { font-size: var(--text-sm); }
+.container { width: 100%; max-width: var(--container); margin-inline: auto; padding-inline: var(--gutter); }
+.muted { color: var(--color-muted); }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@media (max-width: 60rem) { :root { --gutter: 24px; } }
+@media (max-width: 40rem) { :root { --gutter: 16px; --gap-columns: 16px; } }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *:not(.keep-motion), *:not(.keep-motion)::before, *:not(.keep-motion)::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }
+
+.skip { position: absolute; left: var(--space-md); top: calc(-1 * var(--space-3xl)); z-index: var(--z-toast); padding: var(--space-xs) var(--space-md); border-radius: var(--radius-pill); background: var(--color-accent); color: var(--color-accent-ink); }
+.skip:focus-visible { top: var(--space-md); }
+
+/* top bar: slate glass */
+.topbar { position: sticky; top: 0; z-index: var(--z-sticky-nav); background: var(--glass); -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.35); backdrop-filter: blur(var(--glass-blur)) saturate(1.35); box-shadow: inset 0 -1px 0 var(--color-rule); }
+.topbar .container { display: flex; align-items: center; gap: var(--space-lg); min-height: 64px; }
+.wordmark { display: inline-flex; align-items: center; gap: var(--space-xs); min-height: var(--control); font: 600 var(--text-md)/1 var(--font-display); text-decoration: none; white-space: nowrap; }
+.wordmark::before { content: ""; width: var(--space-sm); height: var(--space-sm); border-radius: var(--radius-pill); background: var(--color-accent); box-shadow: 0 0 0 var(--space-2xs) color-mix(in oklab, var(--color-accent) 22%, transparent); }
+.topnav { display: flex; gap: var(--space-3xs); margin-left: auto; overflow-x: auto; scrollbar-width: none; }
+.topnav a { display: inline-flex; align-items: center; min-height: var(--control); padding: 0 var(--space-sm); border-radius: var(--radius-pill); font-size: var(--text-sm); font-weight: 500; color: var(--color-ink-2); text-decoration: none; white-space: nowrap; transition: background-color var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out); }
+.topnav a:hover { color: var(--color-ink); background: var(--color-lift); }
+.topnav a[aria-current="true"] { color: var(--color-ink); background: var(--color-lift-2); }
+
+/* bands */
+.band { padding-block: var(--space-2xl); border-top: var(--rule-hair) solid var(--color-rule); }
+.band__head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: var(--gap-columns); align-items: end; margin-bottom: var(--space-xl); }
+.band__head p { color: var(--color-muted); }
+.sub { margin-top: var(--space-xl); margin-bottom: var(--space-md); color: var(--color-ink-2); }
+.sub:first-child { margin-top: 0; }
+.cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: var(--space-xl) var(--gap-columns); }
+.cols + .cols { margin-top: var(--space-xl); padding-top: var(--space-xl); border-top: var(--rule-hair) solid var(--color-rule); }
+.cols > div { display: grid; gap: var(--space-md); align-content: start; min-width: 0; }
+.cols p, .cols li { color: var(--color-ink-2); }
+@media (max-width: 60rem) { .band__head, .cols { grid-template-columns: minmax(0, 1fr); } }
+
+/* intro */
+.intro { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: var(--gap-columns); align-items: center; padding-block: var(--space-2xl); }
+.intro p { margin-top: var(--space-md); color: var(--color-muted); max-width: 48ch; }
+.actions { display: flex; flex-wrap: wrap; gap: var(--space-sm); margin-top: var(--space-lg); }
+.meta { margin: var(--space-xl) 0 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-md); max-width: 46rem; }
+.meta div { display: grid; align-content: start; gap: var(--space-3xs); border-top: var(--rule-hair) solid var(--color-rule); padding-top: var(--space-sm); font-size: var(--text-sm); }
+.meta dt { color: var(--color-muted); }
+.meta dd { margin: 0; font-weight: 500; }
+@media (max-width: 60rem) { .intro { grid-template-columns: minmax(0, 1fr); } .meta { grid-template-columns: minmax(0, 1fr); } }
+
+/* the signature: a glass pane with a lit edge */
+.plate { background: var(--glass); border-radius: var(--radius-card); -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.35); backdrop-filter: blur(var(--glass-blur)) saturate(1.35); box-shadow: var(--glass-hi), var(--shadow-card); padding: var(--space-lg); display: grid; gap: 0; }
+.plate__head { display: flex; justify-content: space-between; gap: var(--space-md); align-items: baseline; padding-bottom: var(--space-md); }
+.plate__head b { font: 500 var(--text-md)/1.2 var(--font-display); }
+.plate__head small { color: var(--color-muted); }
+.plate__row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-md); align-items: center; padding-block: var(--space-sm); border-top: var(--rule-hair) solid var(--color-lift-2); }
+.plate__row span:first-child { color: var(--color-ink-2); font-size: var(--text-sm); }
+.plate .figure { font: 500 var(--text-2xl)/1 var(--font-display); letter-spacing: var(--tracking-display); }
+.plate .figure--quiet { font-size: var(--text-lg); color: var(--color-ink-2); }
+.plate .figure--owed { color: var(--color-accent-2); }
+.plate__alert { display: flex; gap: var(--space-sm); align-items: center; margin-top: var(--space-sm); padding: var(--space-sm) var(--space-md); border-radius: var(--radius-inner); background: var(--color-owed); box-shadow: inset 0 0 0 1px var(--color-owed-line); color: var(--color-accent-2); font-size: var(--text-sm); font-weight: 500; }
+.plate__alert::before { content: ""; flex-shrink: 0; width: var(--space-xs); height: var(--space-xs); border-radius: var(--radius-pill); background: var(--color-accent-2); }
+
+/* buttons, eight states */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-xs); min-height: var(--control); padding: 0 var(--space-lg); border: 0; border-radius: var(--radius-pill); background: transparent; box-shadow: inset 0 0 0 1px var(--color-lift-2); color: var(--color-ink); font: 600 0.9375rem/1 var(--font-body); text-decoration: none; white-space: nowrap; cursor: pointer; transition: background-color var(--dur-short) var(--ease-out), box-shadow var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out), transform var(--dur-micro) var(--ease-out); }
+.btn:hover, .btn.is-hover { background: var(--color-lift-2); color: var(--color-ink); }
+.btn--primary { background: var(--color-accent); color: var(--color-accent-ink); box-shadow: var(--btn-edge); }
+.btn--primary:hover, .btn--primary.is-hover { background: var(--color-accent-hi); color: var(--color-accent-ink); box-shadow: var(--btn-edge), 0 0 0 var(--space-2xs) color-mix(in oklab, var(--color-accent) 22%, transparent); }
+.btn:active, .btn.is-active { transform: translateY(1px); }
+.btn:focus-visible, .btn.is-focus { outline: 2px solid var(--color-focus); outline-offset: 3px; }
+.btn:disabled, .btn[aria-disabled="true"], .btn.is-disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+.btn[aria-busy="true"], .btn.is-loading { cursor: progress; }
+.btn[aria-busy="true"]::before, .btn.is-loading::before { content: ""; width: var(--space-sm); height: var(--space-sm); border: var(--rule-bar) solid currentColor; border-right-color: transparent; border-radius: var(--radius-pill); animation: spin 700ms linear infinite; }
+.btn.is-error { background: var(--color-owed); box-shadow: inset 0 0 0 1px var(--color-owed-line); color: var(--color-accent-2); }
+.btn.is-success { background: var(--color-accent-deep); box-shadow: var(--btn-edge); color: var(--color-ink); }
+.btn--link { background: transparent; box-shadow: none; text-decoration: underline; text-decoration-color: var(--color-muted); font-weight: 500; padding: 0 var(--space-xs); }
+.btn--link:hover { background: transparent; color: var(--color-accent-hi); }
+@keyframes spin { to { transform: rotate(1turn); } }
+.btn-row { display: flex; flex-wrap: wrap; gap: var(--space-sm); align-items: center; }
+.state-out { min-height: 1lh; margin-top: var(--space-sm); font-size: var(--text-sm); color: var(--color-muted); }
+
+/* choice sets: a pill track */
+.seg { display: inline-flex; flex-wrap: wrap; flex-direction: column; margin: 0; padding: 0; border: 0; min-width: 0; }
+.seg legend { padding: 0; margin-bottom: var(--space-xs); font-size: var(--text-sm); font-weight: 500; color: var(--color-muted); }
+.seg__cells, .seg.track { display: inline-flex; flex-wrap: wrap; gap: var(--space-3xs); padding: var(--space-3xs); border-radius: var(--radius-pill); background: var(--color-paper-2); box-shadow: inset 0 0 0 1px var(--color-rule); }
+.seg input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.seg label, .seg .chipcell { display: inline-flex; align-items: center; min-height: calc(var(--control) - 2 * var(--space-3xs)); padding: 0 var(--space-md); border: 0; border-radius: var(--radius-pill); background: transparent; color: var(--color-ink-2); font-size: var(--text-sm); font-weight: 500; white-space: nowrap; cursor: pointer; transition: background-color var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out); }
+.seg label:hover, .seg .chipcell:hover { background: var(--color-lift); color: var(--color-ink); }
+.seg input:checked + label, .seg .chipcell[aria-pressed="true"] { background: var(--color-accent); color: var(--color-accent-ink); }
+.seg input:focus-visible + label, .seg .chipcell:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.seg input:disabled + label { opacity: 0.55; cursor: not-allowed; }
+
+/* tabs: a ruled list with a dot, never boxes */
+[role="tablist"] { display: flex; flex-wrap: wrap; gap: var(--space-lg); padding: 0 !important; border-radius: 0 !important; background: transparent !important; box-shadow: inset 0 -1px 0 var(--color-rule) !important; }
+[role="tab"] { display: inline-flex; align-items: center; gap: var(--space-xs); min-height: var(--control); padding: 0 var(--space-3xs); border: 0; border-radius: 0; background: transparent; color: var(--color-muted); font-size: var(--text-sm); font-weight: 500; white-space: nowrap; cursor: pointer; box-shadow: inset 0 -2px 0 transparent; transition: color var(--dur-short) var(--ease-out), box-shadow var(--dur-short) var(--ease-out); }
+[role="tab"]::before { content: ""; width: var(--space-xs); height: var(--space-xs); border-radius: var(--radius-pill); background: transparent; box-shadow: inset 0 0 0 1px var(--color-muted); }
+[role="tab"]:hover { color: var(--color-ink); }
+[role="tab"][aria-selected="true"] { color: var(--color-ink); box-shadow: inset 0 -2px 0 var(--color-accent); }
+[role="tab"][aria-selected="true"]::before { background: var(--color-accent); box-shadow: none; }
+[role="tab"]:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.tabpanel { padding-top: var(--space-lg); }
+.tabpanel:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 4px; border-radius: var(--radius-inner); }
+
+/* chips */
+.chips { display: flex; flex-wrap: wrap; gap: var(--space-xs); }
+.chip { display: inline-flex; align-items: center; gap: var(--space-xs); min-height: var(--control); padding: 0 var(--space-md); border: 0; border-radius: var(--radius-pill); background: var(--color-lift); box-shadow: inset 0 0 0 1px var(--color-rule); color: var(--color-ink-2); font-size: var(--text-sm); font-weight: 500; cursor: pointer; transition: background-color var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out), box-shadow var(--dur-short) var(--ease-out); }
+.chip::before { content: ""; flex-shrink: 0; width: var(--space-sm); height: var(--space-sm); border-radius: var(--radius-pill); box-shadow: inset 0 0 0 1.5px currentColor; }
+.chip:hover { background: var(--color-lift-2); color: var(--color-ink); }
+.chip[aria-pressed="true"] { background: color-mix(in oklab, var(--color-accent) 18%, transparent); box-shadow: inset 0 0 0 1px var(--color-accent); color: var(--color-ink); }
+.chip[aria-pressed="true"]::before { background: var(--color-accent); box-shadow: none; }
+.chip:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.chip:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* fields */
+.fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr)); gap: var(--space-lg) var(--gap-columns); align-items: start; }
+.field { display: grid; gap: var(--space-xs); min-width: 0; }
+.field label, .field .label { font-size: var(--text-sm); font-weight: 500; color: var(--color-muted); }
+.input-wrap { position: relative; display: flex; }
+.input, .select { width: 100%; min-width: 0; min-height: var(--control); padding: 0 var(--space-md); border: var(--rule-hair) solid var(--color-muted); border-radius: var(--radius-inner); background: var(--color-paper-2); color: var(--color-ink); color-scheme: dark; outline: 2px solid transparent; outline-offset: -2px; transition: background-color var(--dur-short) var(--ease-out), border-color var(--dur-short) var(--ease-out); }
+.input::placeholder { color: var(--color-muted); }
+.input:hover, .select:hover { background: var(--color-paper-3); }
+.input:focus-visible, .select:focus-visible { outline-color: var(--color-focus); }
+.input:disabled, .select:disabled { opacity: 0.55; cursor: not-allowed; }
+.input[aria-invalid="true"] { border-color: var(--color-accent-2); background: var(--color-owed); }
+.input-wrap .input { padding-right: calc(var(--control) + var(--space-xs)); }
+.clear { position: absolute; right: var(--space-2xs); top: 50%; transform: translateY(-50%); width: calc(var(--control) - var(--space-xs)); height: calc(var(--control) - var(--space-xs)); border: 0; border-radius: var(--radius-pill); background: transparent; color: var(--color-muted); cursor: pointer; font-weight: 600; }
+.clear:hover { background: var(--color-lift-2); color: var(--color-ink); }
+.clear:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
+.help { min-height: 1lh; font-size: var(--text-sm); color: var(--color-muted); }
+.help--error { color: var(--color-accent-2); font-weight: 500; }
+.help--ok { color: var(--color-accent); font-weight: 500; }
+
+/* switch: periwinkle when on */
+.switch { display: inline-flex; align-items: center; gap: var(--space-sm); min-height: var(--control); padding: 0; border: 0; background: transparent; color: var(--color-ink-2); font-size: var(--text-sm); font-weight: 500; cursor: pointer; text-align: left; }
+.switch__track { position: relative; flex-shrink: 0; width: calc(var(--space-xl) + var(--space-xs)); height: calc(var(--space-lg) + var(--space-2xs)); border-radius: var(--radius-pill); background: var(--color-paper-3); box-shadow: inset 0 0 0 1px var(--color-rule); transition: background-color var(--dur-short) var(--ease-out); }
+.switch__track::after { content: ""; position: absolute; top: var(--space-3xs); left: var(--space-3xs); width: var(--space-lg); height: var(--space-lg); border-radius: var(--radius-pill); background: var(--color-ink-2); transition: transform var(--dur-short) var(--ease-out); }
+.switch[aria-checked="true"] .switch__track { background: var(--color-accent); }
+.switch[aria-checked="true"] .switch__track::after { background: var(--color-accent-ink); transform: translateX(calc(var(--space-md) + var(--space-2xs))); }
+.switch:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-pill); }
+.switch:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* status: outcome is a pill (said); write is a word with its dot (done or owed) */
+.badge { display: inline-flex; align-items: center; min-height: var(--space-lg); padding: 0 var(--space-sm); border-radius: var(--radius-pill); background: var(--color-lift); box-shadow: inset 0 0 0 1px var(--color-lift-2); color: var(--color-ink); font-size: var(--text-sm); font-weight: 500; white-space: nowrap; }
+.badge--quiet { background: transparent; color: var(--color-muted); }
+.wr { display: inline-flex; align-items: center; gap: var(--space-xs); font-size: var(--text-sm); font-weight: 500; white-space: nowrap; color: var(--color-ink-2); }
+.wr::before { content: ""; flex-shrink: 0; width: var(--space-xs); height: var(--space-xs); border-radius: var(--radius-pill); }
+.wr--written::before { background: var(--color-accent); }
+.wr--written { color: var(--color-accent); }
+.wr--failed { color: var(--color-accent-2); font-weight: 600; }
+.wr--failed::before { background: var(--color-accent-2); box-shadow: 0 0 0 var(--space-2xs) var(--color-owed); }
+.wr--none { color: var(--color-muted); }
+.wr--none::before { box-shadow: inset 0 0 0 1.5px var(--color-muted); }
+.wr--dup { color: var(--color-muted); }
+.wr--dup::before { background: var(--color-muted); }
+.legend { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-xl) var(--gap-columns); }
+.legend dl { margin: 0; display: grid; gap: 0; }
+.legend dl > div { display: grid; grid-template-columns: 11rem minmax(0, 1fr); gap: var(--space-md); align-items: center; padding-block: var(--space-sm); border-bottom: var(--rule-hair) solid var(--color-rule); }
+.legend dt { justify-self: start; }
+.legend dd { margin: 0; font-size: var(--text-sm); color: var(--color-muted); }
+@media (max-width: 60rem) { .legend { grid-template-columns: minmax(0, 1fr); } .legend dl > div { grid-template-columns: minmax(0, 1fr); gap: var(--space-2xs); } }
+
+/* foundations */
+.swatches { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-sm); }
+@media (max-width: 40rem) { .swatches { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.swatch { display: grid; padding: 0; border: 0; border-radius: var(--radius-card); overflow: clip; background: var(--color-paper-2); box-shadow: inset 0 0 0 1px var(--color-rule); color: var(--color-ink); text-align: left; cursor: pointer; transition: transform var(--dur-micro) var(--ease-out), box-shadow var(--dur-short) var(--ease-out); }
+.swatch:hover { transform: translateY(-1px); box-shadow: inset 0 0 0 1px var(--color-muted); }
+.swatch:active { transform: translateY(1px); }
+.swatch:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
+.swatch__chip { height: var(--space-2xl); background: var(--sw); box-shadow: inset 0 -1px 0 var(--color-rule); }
+.swatch__meta { display: grid; padding: var(--space-sm) var(--space-md); font-size: var(--text-sm); }
+.swatch__meta b { font-weight: 600; }
+.scale { display: grid; border-top: var(--rule-hair) solid var(--color-rule); }
+.scale > div { display: grid; grid-template-columns: 9rem 7rem minmax(0, 1fr); gap: var(--space-md); align-items: center; padding-block: var(--space-sm); border-bottom: var(--rule-hair) solid var(--color-rule); }
+.scale .sample { overflow-wrap: anywhere; min-width: 0; }
+.bar { height: var(--space-sm); border-radius: var(--radius-pill); background: var(--color-accent); }
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-xl) var(--gap-columns); }
+@media (max-width: 60rem) { .two { grid-template-columns: minmax(0, 1fr); } .scale > div { grid-template-columns: 7rem minmax(0, 1fr); } .scale .px { display: none; } }
+
+/* demo stage: a glass pane */
+.stage { padding: var(--space-lg); border-radius: var(--radius-card); background: var(--color-paper-2); box-shadow: var(--glass-hi); }
+.stage + .stage { margin-top: var(--space-md); }
+.stage__bar { display: flex; flex-wrap: wrap; gap: var(--space-md); align-items: end; justify-content: space-between; margin-bottom: var(--space-lg); }
+
+.transcript { margin: 0; padding: 0; list-style: none; display: grid; gap: var(--space-xs); font-size: var(--text-sm); }
+.transcript li { display: grid; grid-template-columns: 5rem minmax(0, 1fr); gap: var(--space-sm); color: var(--color-ink-2); }
+.transcript .who { font-weight: 600; color: var(--color-muted); }
+.transcript .sys { grid-column: 1 / -1; color: var(--color-muted); font-style: italic; }
+pre.record { margin: 0; padding: var(--space-md); border-radius: var(--radius-inner); background: var(--color-shade); color: var(--color-ink-2); font: 400 var(--text-xs)/1.65 var(--font-code); overflow: auto; max-height: 24rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* explorer */
+.explorer { display: grid; gap: var(--space-lg); }
+.filters { border-radius: var(--radius-card); background: var(--color-paper-2); box-shadow: var(--glass-hi); }
+.filters > summary { display: none; min-height: var(--control); padding: 0 var(--space-lg); align-items: center; font-weight: 600; cursor: pointer; list-style: none; }
+.filters > summary::-webkit-details-marker { display: none; }
+.filters > summary:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; border-radius: var(--radius-card); }
+.filters__body { display: grid; gap: var(--space-lg); padding: var(--space-lg); }
+.filters__row { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.2fr); gap: var(--space-md); align-items: end; }
+.filters__chips { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: var(--space-md) var(--gap-columns); }
+.filters__chips .label { display: block; margin-bottom: var(--space-xs); font-size: var(--text-sm); font-weight: 500; color: var(--color-muted); }
+.filters__foot { display: flex; flex-wrap: wrap; gap: var(--space-md); align-items: center; justify-content: space-between; padding-top: var(--space-md); border-top: var(--rule-hair) solid var(--color-rule); }
+@media (max-width: 75rem) { .filters__row { grid-template-columns: repeat(2, minmax(0, 1fr)); } .filters__chips { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 60rem) { .filters > summary { display: flex; } }
+@media (max-width: 40rem) { .filters__row { grid-template-columns: minmax(0, 1fr); } }
+.count { display: flex; flex-wrap: wrap; gap: var(--space-md); align-items: baseline; justify-content: space-between; }
+.count p:first-child { color: var(--color-ink-2); }
+
+/* tables */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+caption { text-align: left; padding-bottom: var(--space-sm); color: var(--color-muted); }
+th { text-align: left; font-weight: 500; color: var(--color-muted); padding: var(--space-xs) var(--space-sm); border-bottom: var(--rule-hair) solid var(--color-rule); white-space: nowrap; }
+td { padding: var(--space-sm); border-bottom: var(--rule-hair) solid var(--color-rule); vertical-align: top; color: var(--color-ink-2); }
+td small { display: block; color: var(--color-muted); }
+.calls td { vertical-align: middle; }
+.calls th .sort { display: inline-flex; align-items: center; gap: var(--space-2xs); min-height: var(--control); padding: 0; border: 0; background: transparent; color: var(--color-muted); font-weight: 500; cursor: pointer; }
+.calls th .sort:hover { color: var(--color-ink); }
+.calls th .sort:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.calls tbody tr { cursor: pointer; transition: background-color var(--dur-short) var(--ease-out); }
+.calls tbody tr:hover { background: var(--color-lift); }
+.calls tbody tr.is-open { background: color-mix(in oklab, var(--color-accent) 12%, transparent); }
+.calls tbody tr.is-mismatch { background: var(--color-owed); }
+.calls tbody tr.is-mismatch:hover { background: color-mix(in oklab, var(--color-accent-2) 16%, transparent); }
+.calls tbody tr.is-mismatch .caller { color: var(--color-accent-2); }
+.calls .open { min-height: var(--control); padding: 0 var(--space-2xs); border: 0; border-radius: var(--space-2xs); background: transparent; color: var(--color-ink); font-weight: 600; text-decoration: underline; text-decoration-color: var(--color-muted); text-underline-offset: 0.18em; cursor: pointer; white-space: nowrap; }
+.calls .open:hover { color: var(--color-accent-hi); }
+.calls .open:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 0; }
+.calls .caller { color: var(--color-ink); font-weight: 500; }
+.calls .caller small { font-weight: 400; }
+tr.is-key td { background: var(--color-owed); }
+tr.is-key td:first-child { color: var(--color-accent-2); font-weight: 600; }
+@media (max-width: 40rem) {
+  .calls thead, .stack thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .calls tbody tr, .stack tr { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-xs) var(--space-md); padding: var(--space-md) var(--space-sm); border-bottom: var(--rule-hair) solid var(--color-rule); }
+  .calls td, .stack td { padding: 0; border: 0; min-width: 0; background: transparent; }
+  .calls td::before, .stack td::before { content: attr(data-label); display: block; font-size: var(--text-xs); color: var(--color-muted); }
+  .calls td:first-child, .stack td:first-child, .stack td:last-child { grid-column: 1 / -1; }
+}
+
+/* data states */
+.state { padding: var(--space-xl) var(--space-lg); border-radius: var(--radius-card); background: var(--color-paper-3); box-shadow: var(--glass-hi); display: grid; gap: var(--space-md); justify-items: start; min-height: 16rem; align-content: center; }
+.state h3 { font-size: var(--text-lg); }
+.state p { color: var(--color-muted); }
+.state--error { box-shadow: var(--glass-hi), inset 0 0 0 1px var(--color-owed-line); }
+.state--error h3 { color: var(--color-accent-2); }
+.skel { display: grid; gap: var(--space-sm); width: 100%; }
+.skel span { display: block; height: var(--space-lg); border-radius: var(--radius-inner); background: var(--color-lift-2); }
+.skel span:nth-child(2n) { width: 86%; }
+.skel span:nth-child(3n) { width: 72%; }
+
+/* drawer and dialog: glass over a dimmed table */
+dialog { padding: 0; border: 0; border-radius: var(--radius-card); background: var(--color-paper-2); color: var(--color-ink); box-shadow: var(--glass-hi), var(--shadow-card); }
+dialog::backdrop { background: var(--color-scrim); }
+dialog[open] { animation: rise var(--dur-short) var(--ease-out); }
+@keyframes rise { from { opacity: 0; transform: translateY(var(--space-xs)); } }
+dialog.drawer { margin: 0 0 0 auto; width: min(40rem, 100%); max-width: 100%; height: 100dvh; max-height: 100dvh; border-radius: var(--radius-card) 0 0 var(--radius-card); }
+dialog.drawer[open] { display: grid; grid-template-rows: auto minmax(0, 1fr); animation-name: slide; }
+@keyframes slide { from { opacity: 0; transform: translateX(var(--space-xl)); } }
+.drawer__head { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-md); align-items: start; padding: var(--space-lg); border-bottom: var(--rule-hair) solid var(--color-rule); }
+.drawer__head p { font-size: var(--text-sm); color: var(--color-muted); margin-top: var(--space-2xs); }
+.drawer__body { overflow-y: auto; padding: var(--space-lg); display: grid; gap: var(--space-lg); align-content: start; }
+.facts { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-sm) var(--space-lg); }
+.facts div { display: grid; gap: var(--space-3xs); border-bottom: var(--rule-hair) solid var(--color-rule); padding-bottom: var(--space-xs); min-width: 0; }
+.facts dt { font-size: var(--text-xs); color: var(--color-muted); }
+.facts dd { margin: 0; font-size: var(--text-sm); font-weight: 500; overflow-wrap: anywhere; }
+.verdict { padding: var(--space-md); border-radius: var(--radius-inner); background: color-mix(in oklab, var(--color-accent) 12%, transparent); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-accent) 40%, transparent); font-size: var(--text-sm); display: grid; gap: var(--space-2xs); color: var(--color-ink-2); }
+.verdict b { color: var(--color-accent); }
+.verdict--bad { background: var(--color-owed); box-shadow: inset 0 0 0 1px var(--color-owed-line); }
+.verdict--bad b { color: var(--color-accent-2); }
+dialog.confirm { width: min(30rem, calc(100% - 2 * var(--gutter))); }
+.confirm__body { padding: var(--space-lg); display: grid; gap: var(--space-md); }
+.confirm__body h2 { font-size: var(--text-lg); }
+.confirm__body p { color: var(--color-muted); }
+.confirm__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--space-sm); padding: var(--space-md) var(--space-lg); border-top: var(--rule-hair) solid var(--color-rule); }
+
+/* toast */
+.toast { position: fixed; left: var(--space-md); bottom: var(--space-md); z-index: var(--z-toast); display: flex; gap: var(--space-md); align-items: center; max-width: min(32rem, calc(100% - 2 * var(--space-md))); padding: var(--space-xs) var(--space-xs) var(--space-xs) var(--space-lg); border-radius: var(--radius-pill); background: var(--glass); -webkit-backdrop-filter: blur(var(--glass-blur)); backdrop-filter: blur(var(--glass-blur)); box-shadow: var(--glass-hi), var(--shadow-card); color: var(--color-ink); font-size: var(--text-sm); min-height: calc(var(--control) + var(--space-xs)); }
+.toast.is-in { animation: rise var(--dur-short) var(--ease-out); }
+.toast .btn { min-height: calc(var(--control) - var(--space-xs)); }
+
+/* keyboard map */
+.keys { margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); gap: var(--space-sm) var(--gap-columns); }
+.keys div { display: grid; grid-template-columns: 8rem minmax(0, 1fr); gap: var(--space-md); padding-bottom: var(--space-xs); border-bottom: var(--rule-hair) solid var(--color-rule); font-size: var(--text-sm); }
+.keys dd { margin: 0; color: var(--color-muted); }
+kbd { font-family: var(--font-code); font-size: var(--text-xs); padding: var(--space-3xs) var(--space-xs); border-radius: var(--space-2xs); background: var(--color-paper-3); box-shadow: inset 0 -1px 0 var(--color-shade), inset 0 0 0 1px var(--color-rule); }
+
+/* diagram */
+.diagram { overflow-x: auto; margin: 0; padding: var(--space-lg); border-radius: var(--radius-card); background: var(--color-paper-2); box-shadow: var(--glass-hi); }
+.diagram svg { display: block; width: 100%; min-width: 760px; height: auto; }
+.diagram .node rect { fill: var(--color-paper-3); stroke: var(--color-rule); stroke-width: 1; rx: 10; }
+.diagram .node--store rect { fill: var(--color-paper); }
+.diagram .node--fail rect { fill: var(--color-paper-3); stroke: var(--color-accent-2); stroke-width: 1.5; }
+.diagram .node--fail .t-small { fill: var(--color-accent-2); }
+.diagram .node--ours rect { fill: var(--color-accent); stroke: var(--color-accent); }
+.diagram .node--ours text, .diagram .node--ours .t-small { fill: var(--color-accent-ink); }
+.diagram text { font-family: var(--font-body); font-size: 14px; fill: var(--color-ink); }
+.diagram .t-strong { font-weight: 600; }
+.diagram .t-small { font-size: 12px; fill: var(--color-muted); }
+.diagram .edge { stroke: var(--color-muted); stroke-width: 1.5; fill: none; }
+.diagram .edge--fail { stroke: var(--color-accent-2); stroke-dasharray: 5 5; }
+.diagram .arrow { fill: var(--color-muted); }
+.diagram .elabel { font-size: 12px; font-weight: 500; fill: var(--color-ink-2); }
+.diagram .halo { fill: var(--color-paper-2); }
+.caption { margin-top: var(--space-sm); font-size: var(--text-sm); color: var(--color-muted); }
+
+/* one ruled tally */
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: var(--rule-hair) solid var(--color-rule); border-bottom: var(--rule-hair) solid var(--color-rule); }
+.stats > div { padding: var(--space-md) var(--space-lg); border-left: var(--rule-hair) solid var(--color-rule); display: grid; gap: var(--space-2xs); align-content: start; }
+.stats > :first-child { padding-left: 0; border-left: 0; }
+.stats b { font: 500 var(--text-3xl)/1 var(--font-display); letter-spacing: var(--tracking-display); }
+.stats > :first-child b { color: var(--color-accent-2); }
+.stats span { font-size: var(--text-sm); color: var(--color-muted); }
+@media (max-width: 60rem) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } .stats > :nth-child(3) { padding-left: 0; border-left: 0; } }
+
+.dl { margin: 0; display: grid; border-top: var(--rule-hair) solid var(--color-rule); }
+.dl > div { display: grid; grid-template-columns: 13rem minmax(0, 1fr); gap: var(--space-md); padding-block: var(--space-sm); border-bottom: var(--rule-hair) solid var(--color-rule); }
+.dl dt { font-weight: 600; font-size: var(--text-sm); }
+.dl dd { margin: 0; font-size: var(--text-sm); color: var(--color-muted); }
+@media (max-width: 40rem) { .dl > div { grid-template-columns: minmax(0, 1fr); gap: var(--space-2xs); } }
+
+/* hand-off: the customer note is a white card on a bone well; the engineering one is slate glass */
+.doc { border-radius: var(--radius-card); background: var(--color-paper-2); box-shadow: var(--glass-hi); overflow: clip; }
+.doc__bar { display: flex; flex-wrap: wrap; gap: var(--space-md); justify-content: space-between; align-items: center; padding: var(--space-sm) var(--space-sm) var(--space-sm) var(--space-lg); border-bottom: var(--rule-hair) solid var(--color-rule); }
+.doc__bar p { font-size: var(--text-sm); color: var(--color-muted); }
+.doc__body { padding: var(--space-lg); display: grid; gap: var(--space-md); font-size: var(--text-sm); line-height: 1.7; color: var(--color-ink-2); }
+.doc__body h3 { margin-top: var(--space-sm); color: var(--color-ink); }
+.doc__body ul, .doc__body ol { max-width: 72ch; }
+.doc--well { background: var(--color-well); box-shadow: none; }
+.doc--well .doc__bar { border-bottom-color: var(--color-well-rule); }
+.doc--well .doc__bar p { color: var(--color-well-muted); }
+.doc--well .doc__body { margin: var(--space-lg); padding: var(--space-xl); border-radius: var(--radius-inner); background: var(--color-card); color: var(--color-well-ink); font-size: var(--text-md); box-shadow: var(--shadow-well); }
+.doc--well .btn { background: transparent; color: var(--color-well-ink); box-shadow: inset 0 0 0 1px var(--color-well-ink); }
+.doc--well .btn:hover { background: var(--color-well-2); color: var(--color-well-ink); }
+.doc--well .btn.is-success { background: var(--color-accent-deep); color: var(--color-card); }
+.log { margin: 0; padding: var(--space-md); border-radius: var(--radius-inner); background: var(--color-shade); color: var(--color-ink-2); font: 400 var(--text-xs)/1.7 var(--font-code); overflow-x: auto; white-space: pre; }
+
+.checks { list-style: none; padding: 0; display: grid; gap: 0; max-width: none; border-top: var(--rule-hair) solid var(--color-rule); }
+.checks li { display: grid; grid-template-columns: var(--control) minmax(0, 1fr); gap: var(--space-sm); align-items: start; padding-block: var(--space-sm); border-bottom: var(--rule-hair) solid var(--color-rule); }
+.checks input { appearance: none; margin: 0; width: var(--control); height: var(--control); border-radius: var(--radius-pill); background: var(--color-paper-2); box-shadow: inset 0 0 0 1px var(--color-rule); cursor: pointer; display: grid; place-content: center; transition: background-color var(--dur-short) var(--ease-out); }
+.checks input::after { content: ""; width: var(--space-md); height: var(--space-md); border-radius: var(--radius-pill); background: var(--color-accent-ink); transform: scale(0); transition: transform var(--dur-short) var(--ease-out); }
+.checks input:checked { background: var(--color-accent); box-shadow: none; }
+.checks input:checked::after { transform: scale(1); }
+.checks input:hover { box-shadow: inset 0 0 0 1px var(--color-muted); }
+.checks input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.checks label { padding-top: var(--space-2xs); font-size: var(--text-sm); color: var(--color-muted); cursor: pointer; }
+.checks label b { display: block; font-size: var(--text-md); font-weight: 500; color: var(--color-ink); }
+.checks input:checked + label b { color: var(--color-muted); text-decoration: line-through; text-decoration-color: var(--color-muted); }
+.progress { font-size: var(--text-sm); color: var(--color-muted); margin-bottom: var(--space-sm); }
+
+footer.foot { border-top: var(--rule-hair) solid var(--color-rule); padding-block: var(--space-xl); font-size: var(--text-sm); color: var(--color-muted); }
+footer.foot .container { display: flex; flex-wrap: wrap; gap: var(--space-md); justify-content: space-between; }
+[role="tablist"] { flex-direction: row !important; }
+.seg.track { flex-direction: row; }
+.seg { align-items: flex-start; }
+.seg__cells, .seg.track { border-radius: calc(var(--control) / 2); }
+.fields > fieldset.seg { grid-column: span 2; }
+@media (max-width: 40rem) { .fields > fieldset.seg { grid-column: auto; } }
+.stage .state { background: transparent; box-shadow: none; padding-inline: 0; min-height: 12rem; }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="container">
+    <a class="wordmark" href="#main" aria-label="Call Explorer design system, back to top">Call Explorer</a>
+    <nav class="topnav" aria-label="Sections">
+      <a href="#foundations">Foundations</a>
+      <a href="#status">Status labels</a>
+      <a href="#controls">Controls</a>
+      <a href="#explorer">Explorer</a>
+      <a href="#states">Data states</a>
+      <a href="#overlays">Overlays</a>
+      <a href="#keyboard">Keyboard</a>
+      <a href="high-level-design.html">Design doc</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <div class="container">
+
+    <section class="intro" aria-labelledby="intro-h">
+      <div>
+        <h1 id="intro-h">Said beside written.</h1>
+        <p>The design system for Call Explorer: every call the AI agent took, checked against what the booking system accepted.</p>
+        <div class="actions">
+          <a class="btn btn--primary" href="#explorer">Try the explorer</a>
+          <a class="btn" href="high-level-design.html">Read the design doc</a>
+        </div>
+      </div>
+      <aside class="plate" aria-label="Signature component: the write ledger sign, showing the Sunrise Dental incident">
+        <div class="plate__head"><b>Sunrise Dental, BookWell</b><small>America/Los_Angeles</small></div>
+        <div class="plate__row"><span>Writes dead-lettered</span><span class="figure figure--owed">24</span></div>
+        <div class="plate__row"><span>Agent told the caller it worked</span><span class="figure figure--quiet">24</span></div>
+        <div class="plate__row"><span>Token refreshes rejected</span><span class="figure figure--quiet">152</span></div>
+        <div class="plate__alert">Open since Mon 26 Oct, 17:31 local: client secret invalid or rotated</div>
+      </aside>
+    </section>
+
+    <section class="band" id="foundations" aria-labelledby="f-h">
+      <div class="band__head">
+        <h2 id="f-h">Tokens, set once</h2>
+        <p>Every colour, size and rule below is a token on <code>:root</code>. Click a swatch to copy its token.</p>
+      </div>
+      <h3 class="sub">Colour</h3>
+      <div class="swatches">
+        <button type="button" class="swatch" data-copy="var(--color-paper)" style="--sw: var(--color-paper)"><span class="swatch__chip"></span><span class="swatch__meta"><b>paper</b><span class="muted">slate canvas</span></span></button>
+        <button type="button" class="swatch" data-copy="var(--color-paper-2)" style="--sw: var(--color-paper-2)"><span class="swatch__chip"></span><span class="swatch__meta"><b>paper-2</b><span class="muted">panes, filters</span></span></button>
+        <button type="button" class="swatch" data-copy="var(--color-paper-3)" style="--sw: var(--color-paper-3)"><span class="swatch__chip"></span><span class="swatch__meta"><b>paper-3</b><span class="muted">raised, inputs</span></span></button>
+        <button type="button" class="swatch" data-copy="var(--color-ink)" style="--sw: var(--color-ink)"><span class="swatch__chip"></span><span class="swatch__meta"><b>ink</b><span class="muted">text</span></span></button>
+        <button type="button" class="swatch" data-copy="var(--color-muted)" style="--sw: var(--color-muted)"><span class="swatch__chip"></span><span class="swatch__meta"><b>muted</b><span class="muted">labels, meta</span></span></button>
+        <button type="button" class="swatch" data-copy="var(--color-accent)" style="--sw: var(--color-accent)"><span class="swatch__chip"></span><span class="swatch__meta"><b>accent</b><span class="muted">periwinkle: written, on, focus</span></span></button>
+        <button type="button" class="swatch" data-copy="var(--color-accent-2)" style="--sw: var(--color-accent-2)"><span class="swatch__chip"></span><span class="swatch__meta"><b>accent-2</b><span class="muted">apricot: failed, owed</span></span></button>
+        <button type="button" class="swatch" data-copy="var(--color-well)" style="--sw: var(--color-well)"><span class="swatch__chip"></span><span class="swatch__meta"><b>well</b><span class="muted">bone: hand-off cards</span></span></button>
+      </div>
+      <div class="two" style="margin-top: var(--space-xl)">
+        <div>
+          <h3 class="sub">Type, Wix Madefor Display over Text</h3>
+          <div class="scale">
+            <div><span class="muted small">text-3xl</span><span class="px muted small">36px 500</span><span class="sample" style="font: 500 var(--text-3xl)/1 var(--font-display); letter-spacing: var(--tracking-display)">24 failed</span></div>
+            <div><span class="muted small">text-xl</span><span class="px muted small">23px 500</span><span class="sample" style="font: 500 var(--text-xl)/1.1 var(--font-display)">Section head</span></div>
+            <div><span class="muted small">text-lg</span><span class="px muted small">19px 500</span><span class="sample" style="font: 500 var(--text-lg)/1.1 var(--font-display)">Drawer title</span></div>
+            <div><span class="muted small">text-md</span><span class="px muted small">17px 400</span><span class="sample">Body and transcripts</span></div>
+            <div><span class="muted small">text-sm</span><span class="px muted small">14px 500</span><span class="sample small" style="font-weight: 500">Labels, table cells, chips</span></div>
+            <div><span class="muted small">text-xs</span><span class="px muted small">12px 400</span><span class="sample" style="font-size: var(--text-xs)">Field names in the drawer</span></div>
+          </div>
+        </div>
+        <div>
+          <h3 class="sub">Spacing and rules</h3>
+          <div class="scale">
+            <div><span class="muted small">space-xs</span><span class="px muted small">8px</span><span class="bar" style="width: var(--space-xs)"></span></div>
+            <div><span class="muted small">space-sm</span><span class="px muted small">12px</span><span class="bar" style="width: var(--space-sm)"></span></div>
+            <div><span class="muted small">space-md</span><span class="px muted small">16px</span><span class="bar" style="width: var(--space-md)"></span></div>
+            <div><span class="muted small">space-lg</span><span class="px muted small">24px</span><span class="bar" style="width: var(--space-lg)"></span></div>
+            <div><span class="muted small">space-xl</span><span class="px muted small">40px</span><span class="bar" style="width: var(--space-xl)"></span></div>
+            <div><span class="muted small">control</span><span class="px muted small">44px</span><span class="bar" style="width: var(--control)"></span></div>
+            <div><span class="muted small">radius-card</span><span class="px muted small">18px</span><span class="small">Panes, drawer, wells</span></div>
+            <div><span class="muted small">radius-inner</span><span class="px muted small">10px</span><span class="small">Inputs, inner parts</span></div>
+            <div><span class="muted small">rule-hair</span><span class="px muted small">1px</span><span class="small">Row dividers only</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="band" id="status" aria-labelledby="s-h">
+      <div class="band__head">
+        <h2 id="s-h">Every call carries two labels</h2>
+        <p>A pill is what the agent said. A word with a dot is what the booking system accepted: periwinkle when done, apricot when still owed. A row where they disagree turns apricot.</p>
+      </div>
+      <div class="legend">
+        <div>
+          <h3 class="sub">Outcome, said by the agent</h3>
+          <dl>
+            <div><dt><span class="badge">booked</span></dt><dd>Agent confirmed a new appointment to the caller.</dd></div>
+            <div><dt><span class="badge">rescheduled</span></dt><dd>Old slot released, new slot confirmed.</dd></div>
+            <div><dt><span class="badge">cancelled</span></dt><dd>Appointment released.</dd></div>
+            <div><dt><span class="badge badge--quiet">resolved</span></dt><dd>Question answered, no appointment change.</dd></div>
+            <div><dt><span class="badge badge--quiet">transferred</span></dt><dd>Handed to a human at the front desk.</dd></div>
+            <div><dt><span class="badge badge--quiet">abandoned</span></dt><dd>Caller hung up before an outcome.</dd></div>
+          </dl>
+        </div>
+        <div>
+          <h3 class="sub">Write, accepted by the booking system</h3>
+          <dl>
+            <div><dt><span class="wr wr--written">written 201</span></dt><dd>A 2xx from booking-sync, with an external id.</dd></div>
+            <div><dt><span class="wr wr--failed">failed 401</span></dt><dd>Every retry failed and the write was dead-lettered.</dd></div>
+            <div><dt><span class="wr wr--none">no write</span></dt><dd>The call never needed one.</dd></div>
+            <div><dt><span class="wr wr--dup">duplicate</span></dt><dd>Same telephony id ingested twice. Hidden by default.</dd></div>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+    <section class="band" id="controls" aria-labelledby="c-h">
+      <div class="band__head">
+        <h2 id="c-h">Controls, every state</h2>
+        <p>Each control is 44px tall, keyboard reachable and shows focus at once. Force a state to see how it renders.</p>
+      </div>
+
+      <h3 class="sub">Buttons</h3>
+      <div class="stage">
+        <div class="stage__bar">
+          <fieldset class="seg" id="force">
+            <legend>Force a state</legend>
+            <div class="seg__cells">
+              <input type="radio" name="force" id="fs-default" value="" checked><label for="fs-default">default</label>
+              <input type="radio" name="force" id="fs-hover" value="is-hover"><label for="fs-hover">hover</label>
+              <input type="radio" name="force" id="fs-focus" value="is-focus"><label for="fs-focus">focus</label>
+              <input type="radio" name="force" id="fs-active" value="is-active"><label for="fs-active">pressed</label>
+              <input type="radio" name="force" id="fs-disabled" value="is-disabled"><label for="fs-disabled">disabled</label>
+              <input type="radio" name="force" id="fs-loading" value="is-loading"><label for="fs-loading">loading</label>
+              <input type="radio" name="force" id="fs-error" value="is-error"><label for="fs-error">error</label>
+              <input type="radio" name="force" id="fs-success" value="is-success"><label for="fs-success">success</label>
+            </div>
+          </fieldset>
+        </div>
+        <div class="btn-row" id="force-targets">
+          <button type="button" class="btn btn--primary" id="retry-demo" data-label="Replay dead letters">Replay dead letters</button>
+          <button type="button" class="btn" data-label="Export CSV">Export CSV</button>
+          <button type="button" class="btn btn--link" data-label="Copy call id">Copy call id</button>
+        </div>
+        <p class="state-out" id="force-out" aria-live="polite">Click the blue button: it loads, then succeeds or fails on alternate clicks.</p>
+      </div>
+
+      <h3 class="sub">Inputs</h3>
+      <div class="stage">
+        <div class="fields">
+          <div class="field">
+            <label for="d-search">Search caller, last 4 digits or call id</label>
+            <div class="input-wrap">
+              <input class="input" id="d-search" name="q" type="search" autocomplete="off" placeholder="Ahmed, 3344, call_00186">
+              <button type="button" class="clear" aria-label="Clear search" hidden>x</button>
+            </div>
+            <span class="help" id="d-search-help">Matches as you type.</span>
+          </div>
+          <div class="field">
+            <label for="d-from">From</label>
+            <input class="input" id="d-from" name="from" type="date" value="2026-10-26" aria-describedby="d-range-help">
+            <span class="help"></span>
+          </div>
+          <div class="field">
+            <label for="d-to">To</label>
+            <input class="input" id="d-to" name="to" type="date" value="2026-10-31" aria-describedby="d-range-help">
+            <span class="help" id="d-range-help" aria-live="polite">Set To before From to see the error state.</span>
+          </div>
+          <div class="field">
+            <label for="d-intent">Intent</label>
+            <select class="select" id="d-intent" name="intent">
+              <option>Any intent</option><option>book_new</option><option>reschedule</option><option>cancel</option><option>confirm</option><option>billing</option><option>pricing</option><option>general_info</option>
+            </select>
+            <span class="help">Set by the classifier after the call.</span>
+          </div>
+          <div class="field">
+            <label for="d-disabled">Booking system</label>
+            <input class="input" id="d-disabled" type="text" value="BookWell" disabled>
+            <span class="help">Disabled: read from customers.json.</span>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="sub">Choices</h3>
+      <div class="stage">
+        <div class="fields">
+          <fieldset class="seg">
+            <legend>Customer, pick one</legend>
+            <div class="seg__cells">
+              <input type="radio" name="d-cust" id="dc-all" checked><label for="dc-all">All</label>
+              <input type="radio" name="d-cust" id="dc-a"><label for="dc-a">Sunrise Dental</label>
+              <input type="radio" name="d-cust" id="dc-b"><label for="dc-b">Lakeside Auto</label>
+              <input type="radio" name="d-cust" id="dc-c"><label for="dc-c">Maple Hair</label>
+            </div>
+          </fieldset>
+          <div class="field">
+            <span class="label" id="d-chips-l">Outcome, pick any</span>
+            <div class="chips" role="group" aria-labelledby="d-chips-l">
+              <button type="button" class="chip" aria-pressed="true">booked</button>
+              <button type="button" class="chip" aria-pressed="false">rescheduled</button>
+              <button type="button" class="chip" aria-pressed="false">cancelled</button>
+              <button type="button" class="chip" aria-pressed="false" disabled>resolved</button>
+            </div>
+          </div>
+          <div class="field">
+            <span class="label">Toggle</span>
+            <button type="button" class="switch" role="switch" aria-checked="true"><span class="switch__track" aria-hidden="true"></span>Hide duplicate records</button>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="sub">Tabs</h3>
+      <div class="stage" data-tabs>
+        <div class="seg"><div class="seg__cells" role="tablist" aria-label="Call detail">
+          <button type="button" role="tab" id="dt-1" aria-controls="dp-1" aria-selected="true">Transcript</button>
+          <button type="button" role="tab" id="dt-2" aria-controls="dp-2" aria-selected="false" tabindex="-1">Booking write</button>
+          <button type="button" role="tab" id="dt-3" aria-controls="dp-3" aria-selected="false" tabindex="-1">Raw record</button>
+        </div></div>
+        <div class="tabpanel" role="tabpanel" id="dp-1" aria-labelledby="dt-1" tabindex="0">
+          <ol class="transcript">
+            <li><span class="who">Agent</span><span>I found your account.</span></li>
+            <li><span class="who">Agent</span><span>I’ve cancelled your appointment on Tuesday, October 27 at 8:30 AM.</span></li>
+            <li><span class="who">Caller</span><span>No, not right now. Thanks.</span></li>
+          </ol>
+        </div>
+        <div class="tabpanel" role="tabpanel" id="dp-2" aria-labelledby="dt-2" tabindex="0" hidden>
+          <div class="verdict verdict--bad"><b>Not written.</b><span>op=cancel, 3 attempts, 401 invalid_token, dead-lettered.</span></div>
+        </div>
+        <div class="tabpanel" role="tabpanel" id="dp-3" aria-labelledby="dt-3" tabindex="0" hidden>
+          <pre class="record">{ "call_id": "call_00186", "customer_id": "cust_a", "outcome": "cancelled", "appointment_id": "apt_baf23ea2a1" }</pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="band" id="explorer" aria-labelledby="e-h">
+      <div class="band__head">
+        <h2 id="e-h">The explorer, assembled</h2>
+        <p>Sixteen real records from calls.json joined to integration.log. Filters live in the URL. Open any row.</p>
+      </div>
+      <div class="explorer">
+        <details class="filters" id="filters" open>
+          <summary>Filters</summary>
+          <form class="filters__body" id="filter-form" role="search" aria-label="Filter calls">
+            <div class="filters__row">
+              <div class="field">
+                <label for="f-q">Search</label>
+                <div class="input-wrap">
+                  <input class="input" id="f-q" name="q" type="search" autocomplete="off" placeholder="Caller, last 4, call id">
+                  <button type="button" class="clear" aria-label="Clear search" hidden>x</button>
+                </div>
+              </div>
+              <div class="field">
+                <label for="f-from">From</label>
+                <input class="input" id="f-from" name="from" type="date" min="2026-10-19" max="2026-11-01">
+              </div>
+              <div class="field">
+                <label for="f-to">To</label>
+                <input class="input" id="f-to" name="to" type="date" min="2026-10-19" max="2026-11-01">
+              </div>
+              <div class="field">
+                <label for="f-intent">Intent</label>
+                <select class="select" id="f-intent" name="intent">
+                  <option value="">Any intent</option><option>book_new</option><option>reschedule</option><option>cancel</option><option>confirm</option><option>billing</option><option>pricing</option><option>general_info</option>
+                </select>
+              </div>
+            </div>
+            <fieldset class="seg">
+              <legend>Customer</legend>
+              <div class="seg__cells">
+                <input type="radio" name="cust" id="fc-all" value="" checked><label for="fc-all">All</label>
+                <input type="radio" name="cust" id="fc-a" value="cust_a"><label for="fc-a">Sunrise Dental</label>
+                <input type="radio" name="cust" id="fc-b" value="cust_b"><label for="fc-b">Lakeside Auto</label>
+                <input type="radio" name="cust" id="fc-c" value="cust_c"><label for="fc-c">Maple Hair</label>
+              </div>
+            </fieldset>
+            <div class="filters__chips">
+              <div>
+                <span class="label" id="f-out-l">Outcome</span>
+                <div class="chips" role="group" aria-labelledby="f-out-l" data-group="outcome">
+                  <button type="button" class="chip" aria-pressed="false" value="booked">booked</button>
+                  <button type="button" class="chip" aria-pressed="false" value="rescheduled">rescheduled</button>
+                  <button type="button" class="chip" aria-pressed="false" value="cancelled">cancelled</button>
+                  <button type="button" class="chip" aria-pressed="false" value="resolved">resolved</button>
+                  <button type="button" class="chip" aria-pressed="false" value="transferred">transferred</button>
+                </div>
+              </div>
+              <div>
+                <span class="label" id="f-wr-l">Write</span>
+                <div class="chips" role="group" aria-labelledby="f-wr-l" data-group="write">
+                  <button type="button" class="chip" aria-pressed="false" value="failed">failed</button>
+                  <button type="button" class="chip" aria-pressed="false" value="written">written</button>
+                  <button type="button" class="chip" aria-pressed="false" value="none">no write</button>
+                </div>
+              </div>
+            </div>
+            <div class="filters__foot">
+              <button type="button" class="switch" role="switch" aria-checked="true" id="f-dup"><span class="switch__track" aria-hidden="true"></span>Hide duplicate records</button>
+              <div class="btn-row">
+                <button type="button" class="btn" id="f-preset">Said but not written</button>
+                <button type="reset" class="btn btn--link" id="f-reset">Reset filters</button>
+              </div>
+            </div>
+          </form>
+        </details>
+
+        <div class="count">
+          <p id="count" aria-live="polite"><b>16</b> of 16 sample calls</p>
+          <p class="small muted">Times are each customer’s local time.</p>
+        </div>
+
+        <div class="table-wrap" id="table-region">
+          <table class="calls" id="calls">
+            <caption class="visually-hidden">Sample calls with the agent’s outcome and the booking write result</caption>
+            <thead>
+              <tr>
+                <th scope="col">Call</th>
+                <th scope="col" aria-sort="ascending"><button type="button" class="sort" id="sort-time">Local time <span aria-hidden="true" id="sort-ind">asc</span></button></th>
+                <th scope="col">Customer</th>
+                <th scope="col">Caller</th>
+                <th scope="col">Intent</th>
+                <th scope="col">Outcome</th>
+                <th scope="col">Write</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr data-id="call_00001" data-at="2026-10-19 07:02" data-date="2026-10-19" data-cust="cust_b" data-intent="pricing" data-outcome="transferred" data-write="none" data-dup="false" data-search="tom chen 7647 call_00001 "><td data-label="Call"><button type="button" class="open">call_00001</button></td><td data-label="Local time">Mon 19 Oct 07:02</td><td data-label="Customer">Lakeside Auto</td><td data-label="Caller" class="caller">Tom Chen<small>ends 7647</small></td><td data-label="Intent">pricing</td><td data-label="Outcome"><span class="badge badge--quiet">transferred</span></td><td data-label="Write"><span class="wr wr--none">no write</span></td></tr>
+              <tr data-id="call_00002" data-at="2026-10-19 08:05" data-date="2026-10-19" data-cust="cust_c" data-intent="cancel" data-outcome="rescheduled" data-write="written" data-dup="false" data-search="hannah morales 5789 call_00002 apt_56ac47345f"><td data-label="Call"><button type="button" class="open">call_00002</button></td><td data-label="Local time">Mon 19 Oct 08:05</td><td data-label="Customer">Maple Hair</td><td data-label="Caller" class="caller">Hannah Morales<small>ends 5789</small></td><td data-label="Intent">cancel</td><td data-label="Outcome"><span class="badge">rescheduled</span></td><td data-label="Write"><span class="wr wr--written">written 200</span></td></tr>
+              <tr data-id="call_00003" data-at="2026-10-19 08:44" data-date="2026-10-19" data-cust="cust_c" data-intent="general_info" data-outcome="resolved" data-write="none" data-dup="false" data-search="fatima ferris 8413 call_00003 "><td data-label="Call"><button type="button" class="open">call_00003</button></td><td data-label="Local time">Mon 19 Oct 08:44</td><td data-label="Customer">Maple Hair</td><td data-label="Caller" class="caller">Fatima Ferris<small>ends 8413</small></td><td data-label="Intent">general_info</td><td data-label="Outcome"><span class="badge badge--quiet">resolved</span></td><td data-label="Write"><span class="wr wr--none">no write</span></td></tr>
+              <tr data-id="call_00049" data-at="2026-10-20 12:22" data-date="2026-10-20" data-cust="cust_a" data-intent="reschedule" data-outcome="rescheduled" data-write="written" data-dup="false" data-search="victor hughes 4029 call_00049 apt_e632e41ab8"><td data-label="Call"><button type="button" class="open">call_00049</button></td><td data-label="Local time">Tue 20 Oct 12:22</td><td data-label="Customer">Sunrise Dental</td><td data-label="Caller" class="caller">Victor Hughes<small>ends 4029</small></td><td data-label="Intent">reschedule</td><td data-label="Outcome"><span class="badge">rescheduled</span></td><td data-label="Write"><span class="wr wr--written">written 200</span></td></tr>
+              <tr data-id="call_00050" data-at="2026-10-20 12:22" data-date="2026-10-20" data-cust="cust_a" data-intent="reschedule" data-outcome="rescheduled" data-write="written" data-dup="true" data-search="victor hughes 4029 call_00050 apt_e632e41ab8"><td data-label="Call"><button type="button" class="open">call_00050</button></td><td data-label="Local time">Tue 20 Oct 12:22</td><td data-label="Customer">Sunrise Dental</td><td data-label="Caller" class="caller">Victor Hughes<small>ends 4029</small></td><td data-label="Intent">reschedule</td><td data-label="Outcome"><span class="badge">rescheduled</span></td><td data-label="Write"><span class="wr wr--dup">duplicate</span></td></tr>
+              <tr data-id="call_00105" data-at="2026-10-22 13:13" data-date="2026-10-22" data-cust="cust_b" data-intent="cancel" data-outcome="rescheduled" data-write="written" data-dup="false" data-search="fatima mendoza 9658 call_00105 apt_4a10d762c1"><td data-label="Call"><button type="button" class="open">call_00105</button></td><td data-label="Local time">Thu 22 Oct 13:13</td><td data-label="Customer">Lakeside Auto</td><td data-label="Caller" class="caller">Fatima Mendoza<small>ends 9658</small></td><td data-label="Intent">cancel</td><td data-label="Outcome"><span class="badge">rescheduled</span></td><td data-label="Write"><span class="wr wr--written">written 200</span></td></tr>
+              <tr data-id="call_00108" data-at="2026-10-22 13:13" data-date="2026-10-22" data-cust="cust_b" data-intent="cancel" data-outcome="rescheduled" data-write="written" data-dup="true" data-search="fatima mendoza 9658 call_00108 apt_4a10d762c1"><td data-label="Call"><button type="button" class="open">call_00108</button></td><td data-label="Local time">Thu 22 Oct 13:13</td><td data-label="Customer">Lakeside Auto</td><td data-label="Caller" class="caller">Fatima Mendoza<small>ends 9658</small></td><td data-label="Intent">cancel</td><td data-label="Outcome"><span class="badge">rescheduled</span></td><td data-label="Write"><span class="wr wr--dup">duplicate</span></td></tr>
+              <tr data-id="call_00181" data-at="2026-10-26 16:35" data-date="2026-10-26" data-cust="cust_a" data-intent="general_info" data-outcome="resolved" data-write="none" data-dup="false" data-search="jorge foster 3800 call_00181 "><td data-label="Call"><button type="button" class="open">call_00181</button></td><td data-label="Local time">Mon 26 Oct 16:35</td><td data-label="Customer">Sunrise Dental</td><td data-label="Caller" class="caller">Jorge Foster<small>ends 3800</small></td><td data-label="Intent">general_info</td><td data-label="Outcome"><span class="badge badge--quiet">resolved</span></td><td data-label="Write"><span class="wr wr--none">no write</span></td></tr>
+              <tr data-id="call_00186" data-at="2026-10-26 18:55" data-date="2026-10-26" data-cust="cust_a" data-intent="cancel" data-outcome="cancelled" data-write="failed" data-dup="false" data-search="ahmed cole 3344 call_00186 apt_baf23ea2a1" class="is-mismatch"><td data-label="Call"><button type="button" class="open">call_00186</button></td><td data-label="Local time">Mon 26 Oct 18:55</td><td data-label="Customer">Sunrise Dental</td><td data-label="Caller" class="caller">Ahmed Cole<small>ends 3344</small></td><td data-label="Intent">cancel</td><td data-label="Outcome"><span class="badge">cancelled</span></td><td data-label="Write"><span class="wr wr--failed">failed 401</span></td></tr>
+              <tr data-id="call_00191" data-at="2026-10-27 07:02" data-date="2026-10-27" data-cust="cust_a" data-intent="book_new" data-outcome="booked" data-write="failed" data-dup="false" data-search="samuel iyer 6019 call_00191 apt_350ac5f57e" class="is-mismatch"><td data-label="Call"><button type="button" class="open">call_00191</button></td><td data-label="Local time">Tue 27 Oct 07:02</td><td data-label="Customer">Sunrise Dental</td><td data-label="Caller" class="caller">Samuel Iyer<small>ends 6019</small></td><td data-label="Intent">book_new</td><td data-label="Outcome"><span class="badge">booked</span></td><td data-label="Write"><span class="wr wr--failed">failed 401</span></td></tr>
+              <tr data-id="call_00209" data-at="2026-10-27 18:46" data-date="2026-10-27" data-cust="cust_a" data-intent="cancel" data-outcome="rescheduled" data-write="failed" data-dup="false" data-search="priya bishop 5115 call_00209 apt_8a34c044a7" class="is-mismatch"><td data-label="Call"><button type="button" class="open">call_00209</button></td><td data-label="Local time">Tue 27 Oct 18:46</td><td data-label="Customer">Sunrise Dental</td><td data-label="Caller" class="caller">Priya Bishop<small>ends 5115</small></td><td data-label="Intent">cancel</td><td data-label="Outcome"><span class="badge">rescheduled</span></td><td data-label="Write"><span class="wr wr--failed">failed 401</span></td></tr>
+              <tr data-id="call_00223" data-at="2026-10-28 10:58" data-date="2026-10-28" data-cust="cust_a" data-intent="book_new" data-outcome="booked" data-write="failed" data-dup="false" data-search="maria cole 1836 call_00223 apt_1fd2e010d2" class="is-mismatch"><td data-label="Call"><button type="button" class="open">call_00223</button></td><td data-label="Local time">Wed 28 Oct 10:58</td><td data-label="Customer">Sunrise Dental</td><td data-label="Caller" class="caller">Maria Cole<small>ends 1836</small></td><td data-label="Intent">book_new</td><td data-label="Outcome"><span class="badge">booked</span></td><td data-label="Write"><span class="wr wr--failed">failed 401</span></td></tr>
+              <tr data-id="call_00234" data-at="2026-10-29 08:34" data-date="2026-10-29" data-cust="cust_c" data-intent="cancel" data-outcome="rescheduled" data-write="written" data-dup="false" data-search="carlos ferris 9429 call_00234 apt_38129c92d7"><td data-label="Call"><button type="button" class="open">call_00234</button></td><td data-label="Local time">Thu 29 Oct 08:34</td><td data-label="Customer">Maple Hair</td><td data-label="Caller" class="caller">Carlos Ferris<small>ends 9429</small></td><td data-label="Intent">cancel</td><td data-label="Outcome"><span class="badge">rescheduled</span></td><td data-label="Write"><span class="wr wr--written">written 200</span></td></tr>
+              <tr data-id="call_00255" data-at="2026-10-29 12:24" data-date="2026-10-29" data-cust="cust_a" data-intent="book_new" data-outcome="booked" data-write="failed" data-dup="false" data-search="jorge yamada 9064 call_00255 apt_116b16eeac" class="is-mismatch"><td data-label="Call"><button type="button" class="open">call_00255</button></td><td data-label="Local time">Thu 29 Oct 12:24</td><td data-label="Customer">Sunrise Dental</td><td data-label="Caller" class="caller">Jorge Yamada<small>ends 9064</small></td><td data-label="Intent">book_new</td><td data-label="Outcome"><span class="badge">booked</span></td><td data-label="Write"><span class="wr wr--failed">failed 401</span></td></tr>
+              <tr data-id="call_00262" data-at="2026-10-29 15:43" data-date="2026-10-29" data-cust="cust_a" data-intent="cancel" data-outcome="cancelled" data-write="failed" data-dup="false" data-search="paul brennan 7173 call_00262 apt_b69320ce2e" class="is-mismatch"><td data-label="Call"><button type="button" class="open">call_00262</button></td><td data-label="Local time">Thu 29 Oct 15:43</td><td data-label="Customer">Sunrise Dental</td><td data-label="Caller" class="caller">Paul Brennan<small>ends 7173</small></td><td data-label="Intent">cancel</td><td data-label="Outcome"><span class="badge">cancelled</span></td><td data-label="Write"><span class="wr wr--failed">failed 401</span></td></tr>
+              <tr data-id="call_00297" data-at="2026-10-31 11:43" data-date="2026-10-31" data-cust="cust_a" data-intent="book_new" data-outcome="booked" data-write="failed" data-dup="false" data-search="tom chen 9745 call_00297 apt_251870f74c" class="is-mismatch"><td data-label="Call"><button type="button" class="open">call_00297</button></td><td data-label="Local time">Sat 31 Oct 11:43</td><td data-label="Customer">Sunrise Dental</td><td data-label="Caller" class="caller">Tom Chen<small>ends 9745</small></td><td data-label="Intent">book_new</td><td data-label="Outcome"><span class="badge">booked</span></td><td data-label="Write"><span class="wr wr--failed">failed 401</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="state" id="table-empty" hidden>
+          <h3>No calls match these filters.</h3>
+          <p>Widen the dates or clear a chip. The sample holds 16 calls.</p>
+          <button type="button" class="btn" data-reset>Reset filters</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="band" id="states" aria-labelledby="st-h">
+      <div class="band__head">
+        <h2 id="st-h">Four states for every data region</h2>
+        <p>Loading takes the shape of what is coming. Empty says what belongs here. Error says what broke and what to do.</p>
+      </div>
+      <div class="stage">
+        <div class="stage__bar">
+          <fieldset class="seg" id="state-pick">
+            <legend>Show state</legend>
+            <div class="seg__cells">
+              <input type="radio" name="state" id="sp-full" value="full" checked><label for="sp-full">full</label>
+              <input type="radio" name="state" id="sp-loading" value="loading"><label for="sp-loading">loading</label>
+              <input type="radio" name="state" id="sp-empty" value="empty"><label for="sp-empty">empty</label>
+              <input type="radio" name="state" id="sp-error" value="error"><label for="sp-error">error</label>
+            </div>
+          </fieldset>
+        </div>
+        <div data-state="full" class="state">
+          <h3>24 calls said booked, rescheduled or cancelled. None reached BookWell.</h3>
+          <p>Sunrise Dental, 26 to 31 Oct. Open the filtered list to call each patient back.</p>
+          <a class="btn" href="#explorer" data-preset>Show the 24 pattern</a>
+        </div>
+        <div data-state="loading" class="state" aria-busy="true" hidden>
+          <span class="visually-hidden">Loading calls</span>
+          <div class="skel" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+        </div>
+        <div data-state="empty" class="state" hidden>
+          <h3>No failed writes in this range.</h3>
+          <p>Every call that changed an appointment was accepted by the booking system.</p>
+          <button type="button" class="btn">Widen to two weeks</button>
+        </div>
+        <div data-state="error" class="state state--error" hidden>
+          <h3>Could not read integration.log.</h3>
+          <p>The file is missing or not readable, so write status is unknown. Calls still show, with every write marked unknown.</p>
+          <button type="button" class="btn">Try again</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="band" id="overlays" aria-labelledby="o-h">
+      <div class="band__head">
+        <h2 id="o-h">Drawer, confirm, toast</h2>
+        <p>The drawer keeps the table in view. A bulk replay asks first. A toast confirms and offers undo.</p>
+      </div>
+      <div class="stage">
+        <div class="btn-row">
+          <button type="button" class="btn" data-open="call_00191">Open a call drawer</button>
+          <button type="button" class="btn" id="open-confirm">Replay 24 writes</button>
+          <button type="button" class="btn" id="open-toast">Show a toast</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="band" id="keyboard" aria-labelledby="k-h">
+      <div class="band__head">
+        <h2 id="k-h">Every action by keyboard</h2>
+        <p>No pointer needed anywhere on this page.</p>
+      </div>
+      <dl class="keys">
+        <div><dt><kbd>Tab</kbd></dt><dd>Next control, with a visible focus ring.</dd></div>
+        <div><dt><kbd>Enter</kbd></dt><dd>Open the focused call in the drawer.</dd></div>
+        <div><dt><kbd>Esc</kbd></dt><dd>Close the drawer or dialog, focus returns to the row.</dd></div>
+        <div><dt><kbd>Left</kbd> <kbd>Right</kbd></dt><dd>Move between tabs and segment cells.</dd></div>
+        <div><dt><kbd>Space</kbd></dt><dd>Toggle a chip or switch.</dd></div>
+        <div><dt><kbd>/</kbd></dt><dd>Jump to explorer search.</dd></div>
+      </dl>
+    </section>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="container">
+    <span>Call Explorer design system, v1, 14 Nov 2026. Dusk tokens. All data synthetic.</span>
+    <a href="high-level-design.html">Design doc</a>
+  </div>
+</footer>
+
+<dialog class="drawer" id="drawer" aria-labelledby="dr-title">
+  <div class="drawer__head">
+    <div>
+      <h2 id="dr-title">Call</h2>
+      <p id="dr-sub"></p>
+    </div>
+    <button type="button" class="btn" data-close>Close</button>
+  </div>
+  <div class="drawer__body">
+    <div id="dr-verdict" class="verdict"></div>
+    <dl class="facts" id="dr-facts"></dl>
+    <div data-tabs>
+      <div class="seg"><div class="seg__cells" role="tablist" aria-label="Call detail">
+        <button type="button" role="tab" id="drt-1" aria-controls="drp-1" aria-selected="true">Transcript</button>
+        <button type="button" role="tab" id="drt-2" aria-controls="drp-2" aria-selected="false" tabindex="-1">Raw record</button>
+      </div></div>
+      <div class="tabpanel" role="tabpanel" id="drp-1" aria-labelledby="drt-1" tabindex="0"><ol class="transcript" id="dr-transcript"></ol></div>
+      <div class="tabpanel" role="tabpanel" id="drp-2" aria-labelledby="drt-2" tabindex="0" hidden><pre class="record" id="dr-record"></pre></div>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="confirm" id="confirm" aria-labelledby="cf-title">
+  <form method="dialog">
+    <div class="confirm__body">
+      <h2 id="cf-title">Replay 24 dead-lettered writes?</h2>
+      <p>Only after Sunrise Dental’s BookWell credentials are fixed. Slots may have been taken since, so each replay checks availability first.</p>
+    </div>
+    <div class="confirm__actions">
+      <button type="submit" class="btn" value="cancel">Keep them queued</button>
+      <button type="submit" class="btn btn--primary" value="ok">Replay 24 writes</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status" hidden>
+  <span id="toast-msg"></span>
+  <button type="button" class="btn" id="toast-undo">Undo</button>
+</div>
+
+<script id="sample" type="application/json">[{"id": "call_00001", "cust": "cust_b", "name": "Lakeside Auto Service", "at": "2026-10-19 07:02", "day": "Mon 19 Oct", "time": "07:02", "dur": 53, "caller": "Tom Chen", "last4": "7647", "intent": "pricing", "outcome": "transferred", "appt": null, "sync": "none", "code": "", "attempts": 0, "dup": false, "sid": "CA9d04f0db3836bd4001ade37909545351", "transcript": "Agent: Thanks for calling Lakeside Auto Service, this is the virtual assistant. How can I help you today?\nCaller: How much is a brake inspection?\nAgent: Pricing for that depends on a few details. Let me connect you with the front desk for a quote.\n[transferred to front desk]"}, {"id": "call_00002", "cust": "cust_c", "name": "Maple Hair Studio", "at": "2026-10-19 08:05", "day": "Mon 19 Oct", "time": "08:05", "dur": 151, "caller": "Hannah Morales", "last4": "5789", "intent": "cancel", "outcome": "rescheduled", "appt": "apt_56ac47345f", "sync": "written", "code": "200", "attempts": 1, "dup": false, "sid": "CAa327478206e2103417b292b70fc0b9aa", "transcript": "Agent: Thanks for calling Maple Hair Studio, this is the virtual assistant. How can I help you today?\nCaller: I need to cancel my booking and rebook for a different time.\nAgent: Sure. Can I get your name and the phone number on your account?\nCaller: Hannah Morales, it's the number ending 5789.\nAgent: Thanks, Hannah. I found your account.\nAgent: I see your appointment on Monday, October 26 at 1:00 PM. The next opening with Jess is Tuesday, October 20 at 1:30 PM. Would you like that instead?\nCaller: Yes please.\nAgent: Done. You're now booked for Tuesday, October 20 at 1:30 PM with Jess, and your old appointment is released.\nCaller: Great, thanks."}, {"id": "call_00003", "cust": "cust_c", "name": "Maple Hair Studio", "at": "2026-10-19 08:44", "day": "Mon 19 Oct", "time": "08:44", "dur": 57, "caller": "Fatima Ferris", "last4": "8413", "intent": "general_info", "outcome": "resolved", "appt": null, "sync": "none", "code": "", "attempts": 0, "dup": false, "sid": "CAefa3f4984a41669f757cce92055a1a30", "transcript": "Agent: Thanks for calling Maple Hair Studio, this is the virtual assistant. How can I help you today?\nCaller: What are your hours?\nAgent: We're open Monday through Friday, 8 AM to 5 PM. Is there anything else I can help with?\nCaller: No, that's it. Thanks."}, {"id": "call_00049", "cust": "cust_a", "name": "Sunrise Dental", "at": "2026-10-20 12:22", "day": "Tue 20 Oct", "time": "12:22", "dur": 153, "caller": "Victor Hughes", "last4": "4029", "intent": "reschedule", "outcome": "rescheduled", "appt": "apt_e632e41ab8", "sync": "written", "code": "200", "attempts": 1, "dup": false, "sid": "CA7ad7f4db8559c0ac5c41cfd774485031", "transcript": "Agent: Thanks for calling Sunrise Dental, this is the virtual assistant. How can I help you today?\nCaller: Can I reschedule my appointment to a later date?\nAgent: Sure. Can I get your name and the phone number on your account?\nCaller: Victor Hughes, it's the number ending 4029.\nAgent: Thanks, Victor. I found your account.\nAgent: I see your appointment on Monday, October 26 at 10:15 AM. The next opening with Dr. Alvarez is Tuesday, October 27 at 11:30 AM. Would you like that instead?\nCaller: Yes please.\nAgent: Done. You're now booked for Tuesday, October 27 at 11:30 AM with Dr. Alvarez, and your old appointment is released.\nCaller: Great, thanks."}, {"id": "call_00050", "cust": "cust_a", "name": "Sunrise Dental", "at": "2026-10-20 12:22", "day": "Tue 20 Oct", "time": "12:22", "dur": 153, "caller": "Victor Hughes", "last4": "4029", "intent": "reschedule", "outcome": "rescheduled", "appt": "apt_e632e41ab8", "sync": "written", "code": "200", "attempts": 1, "dup": true, "sid": "CA7ad7f4db8559c0ac5c41cfd774485031", "transcript": "Agent: Thanks for calling Sunrise Dental, this is the virtual assistant. How can I help you today?\nCaller: Can I reschedule my appointment to a later date?\nAgent: Sure. Can I get your name and the phone number on your account?\nCaller: Victor Hughes, it's the number ending 4029.\nAgent: Thanks, Victor. I found your account.\nAgent: I see your appointment on Monday, October 26 at 10:15 AM. The next opening with Dr. Alvarez is Tuesday, October 27 at 11:30 AM. Would you like that instead?\nCaller: Yes please.\nAgent: Done. You're now booked for Tuesday, October 27 at 11:30 AM with Dr. Alvarez, and your old appointment is released.\nCaller: Great, thanks."}, {"id": "call_00105", "cust": "cust_b", "name": "Lakeside Auto Service", "at": "2026-10-22 13:13", "day": "Thu 22 Oct", "time": "13:13", "dur": 132, "caller": "Fatima Mendoza", "last4": "9658", "intent": "cancel", "outcome": "rescheduled", "appt": "apt_4a10d762c1", "sync": "written", "code": "200", "attempts": 1, "dup": false, "sid": "CA95db5a5a23f3a485070c95c65f4abc2c", "transcript": "Agent: Thanks for calling Lakeside Auto Service, this is the virtual assistant. How can I help you today?\nCaller: I have to cancel my appointment this week, can we move it to next week instead?\nAgent: Sure. Can I get your name and the phone number on your account?\nCaller: Fatima Mendoza, it's the number ending 9658.\nAgent: Thanks, Fatima. I found your account.\nAgent: I see your appointment on Friday, October 30 at 2:00 PM. The next opening with Mike is Monday, October 26 at 9:45 AM. Would you like that instead?\nCaller: Yes please.\nAgent: Done. You're now booked for Monday, October 26 at 9:45 AM with Mike, and your old appointment is released.\nCaller: Great, thanks."}, {"id": "call_00108", "cust": "cust_b", "name": "Lakeside Auto Service", "at": "2026-10-22 13:13", "day": "Thu 22 Oct", "time": "13:13", "dur": 132, "caller": "Fatima Mendoza", "last4": "9658", "intent": "cancel", "outcome": "rescheduled", "appt": "apt_4a10d762c1", "sync": "written", "code": "200", "attempts": 1, "dup": true, "sid": "CA95db5a5a23f3a485070c95c65f4abc2c", "transcript": "Agent: Thanks for calling Lakeside Auto Service, this is the virtual assistant. How can I help you today?\nCaller: I have to cancel my appointment this week, can we move it to next week instead?\nAgent: Sure. Can I get your name and the phone number on your account?\nCaller: Fatima Mendoza, it's the number ending 9658.\nAgent: Thanks, Fatima. I found your account.\nAgent: I see your appointment on Friday, October 30 at 2:00 PM. The next opening with Mike is Monday, October 26 at 9:45 AM. Would you like that instead?\nCaller: Yes please.\nAgent: Done. You're now booked for Monday, October 26 at 9:45 AM with Mike, and your old appointment is released.\nCaller: Great, thanks."}, {"id": "call_00181", "cust": "cust_a", "name": "Sunrise Dental", "at": "2026-10-26 16:35", "day": "Mon 26 Oct", "time": "16:35", "dur": 96, "caller": "Jorge Foster", "last4": "3800", "intent": "general_info", "outcome": "resolved", "appt": null, "sync": "none", "code": "", "attempts": 0, "dup": false, "sid": "CAafa961737f8b0e7ae95da2894440761e", "transcript": "Agent: Thanks for calling Sunrise Dental, this is the virtual assistant. How can I help you today?\nCaller: What are your hours?\nAgent: We're open Monday through Friday, 8 AM to 5 PM. Is there anything else I can help with?\nCaller: No, that's it. Thanks."}, {"id": "call_00186", "cust": "cust_a", "name": "Sunrise Dental", "at": "2026-10-26 18:55", "day": "Mon 26 Oct", "time": "18:55", "dur": 121, "caller": "Ahmed Cole", "last4": "3344", "intent": "cancel", "outcome": "cancelled", "appt": "apt_baf23ea2a1", "sync": "failed", "code": "401", "attempts": 3, "dup": false, "sid": "CAe3515755110470dfe668b1a815720e4f", "transcript": "Agent: Thanks for calling Sunrise Dental, this is the virtual assistant. How can I help you today?\nCaller: Please cancel my upcoming booking.\nAgent: Sure. Can I get your name and the phone number on your account?\nCaller: Ahmed Cole, it's the number ending 3344.\nAgent: Thanks, Ahmed. I found your account.\nAgent: I've cancelled your appointment on Tuesday, October 27 at 8:30 AM. Would you like to book a new one?\nCaller: No, not right now. Thanks.\nAgent: No problem. Take care."}, {"id": "call_00191", "cust": "cust_a", "name": "Sunrise Dental", "at": "2026-10-27 07:02", "day": "Tue 27 Oct", "time": "07:02", "dur": 135, "caller": "Samuel Iyer", "last4": "6019", "intent": "book_new", "outcome": "booked", "appt": "apt_350ac5f57e", "sync": "failed", "code": "401", "attempts": 3, "dup": false, "sid": "CA70149868a0c3c6fdf3496b163d6c8a9b", "transcript": "Agent: Thanks for calling Sunrise Dental, this is the virtual assistant. How can I help you today?\nCaller: Can I get a filling consult with Dr. Alvarez?\nAgent: Sure. Can I get your name and the phone number on your account?\nCaller: Samuel Iyer, it's the number ending 6019.\nAgent: Thanks, Samuel. I found your account.\nAgent: I have Wednesday, November 4 at 2:00 PM with Dr. Alvarez. Does that work for you?\nCaller: Yes, that works.\nAgent: Perfect, you're booked with Dr. Alvarez on Wednesday, November 4 at 2:00 PM. You'll get a text reminder the day before.\nCaller: Thank you!\nAgent: You're welcome. Have a great day."}, {"id": "call_00209", "cust": "cust_a", "name": "Sunrise Dental", "at": "2026-10-27 18:46", "day": "Tue 27 Oct", "time": "18:46", "dur": 129, "caller": "Priya Bishop", "last4": "5115", "intent": "cancel", "outcome": "rescheduled", "appt": "apt_8a34c044a7", "sync": "failed", "code": "401", "attempts": 3, "dup": false, "sid": "CA1478c8992557635881d936ec9d1b3b8c", "transcript": "Agent: Thanks for calling Sunrise Dental, this is the virtual assistant. How can I help you today?\nCaller: Hi, I need to cancel my appointment on Wednesday, October 28 at 3:30 PM and move it to another day.\nAgent: Sure. Can I get your name and the phone number on your account?\nCaller: Priya Bishop, it's the number ending 5115.\nAgent: Thanks, Priya. I found your account.\nAgent: I see your appointment on Wednesday, October 28 at 3:30 PM. The next opening with Dr. Patel is Thursday, November 5 at 8:45 AM. Would you like that instead?\nCaller: Yes please.\nAgent: Done. You're now booked for Thursday, November 5 at 8:45 AM with Dr. Patel, and your old appointment is released.\nCaller: Great, thanks."}, {"id": "call_00223", "cust": "cust_a", "name": "Sunrise Dental", "at": "2026-10-28 10:58", "day": "Wed 28 Oct", "time": "10:58", "dur": 168, "caller": "Maria Cole", "last4": "1836", "intent": "book_new", "outcome": "booked", "appt": "apt_1fd2e010d2", "sync": "failed", "code": "401", "attempts": 3, "dup": false, "sid": "CA67b1e2ead753a5c77293fe7c9c07cad6", "transcript": "Agent: Thanks for calling Sunrise Dental, this is the virtual assistant. How can I help you today?\nCaller: Can I get a checkup with Dr. Alvarez?\nAgent: Sure. Can I get your name and the phone number on your account?\nCaller: Maria Cole, it's the number ending 1836.\nAgent: Thanks, Maria. I found your account.\nAgent: I have Tuesday, November 3 at 3:30 PM with Dr. Alvarez. Does that work for you?\nCaller: Yes, that works.\nAgent: Perfect, you're booked with Dr. Alvarez on Tuesday, November 3 at 3:30 PM. You'll get a text reminder the day before.\nCaller: Thank you!\nAgent: You're welcome. Have a great day."}, {"id": "call_00234", "cust": "cust_c", "name": "Maple Hair Studio", "at": "2026-10-29 08:34", "day": "Thu 29 Oct", "time": "08:34", "dur": 152, "caller": "Carlos Ferris", "last4": "9429", "intent": "cancel", "outcome": "rescheduled", "appt": "apt_38129c92d7", "sync": "written", "code": "200", "attempts": 1, "dup": false, "sid": "CA513cab086a9d2a47cc6849fa5a95a048", "transcript": "Agent: Thanks for calling Maple Hair Studio, this is the virtual assistant. How can I help you today?\nCaller: Hi, I need to cancel my appointment on Tuesday, November 3 at 1:30 PM and move it to another day.\nAgent: Sure. Can I get your name and the phone number on your account?\nCaller: Carlos Ferris, it's the number ending 9429.\nAgent: Thanks, Carlos. I found your account.\nAgent: I see your appointment on Tuesday, November 3 at 1:30 PM. The next opening with Priya is Friday, November 6 at 10:15 AM. Would you like that instead?\nCaller: Yes please.\nAgent: Done. You're now booked for Friday, November 6 at 10:15 AM with Priya, and your old appointment is released.\nCaller: Great, thanks."}, {"id": "call_00255", "cust": "cust_a", "name": "Sunrise Dental", "at": "2026-10-29 12:24", "day": "Thu 29 Oct", "time": "12:24", "dur": 157, "caller": "Jorge Yamada", "last4": "9064", "intent": "book_new", "outcome": "booked", "appt": "apt_116b16eeac", "sync": "failed", "code": "401", "attempts": 3, "dup": false, "sid": "CA22848dd2498a1f39ef70bc8d8cb2baa2", "transcript": "Agent: Thanks for calling Sunrise Dental, this is the virtual assistant. How can I help you today?\nCaller: Hi, I'd like to book a cleaning.\nAgent: Sure. Can I get your name and the phone number on your account?\nCaller: Jorge Yamada, it's the number ending 9064.\nAgent: Thanks, Jorge. I found your account.\nAgent: I have Monday, November 2 at 2:15 PM with Dr. Nguyen. Does that work for you?\nCaller: Yes, that works.\nAgent: Perfect, you're booked with Dr. Nguyen on Monday, November 2 at 2:15 PM. You'll get a text reminder the day before.\nCaller: Thank you!\nAgent: You're welcome. Have a great day."}, {"id": "call_00262", "cust": "cust_a", "name": "Sunrise Dental", "at": "2026-10-29 15:43", "day": "Thu 29 Oct", "time": "15:43", "dur": 128, "caller": "Paul Brennan", "last4": "7173", "intent": "cancel", "outcome": "cancelled", "appt": "apt_b69320ce2e", "sync": "failed", "code": "401", "attempts": 3, "dup": false, "sid": "CAb5b61afe854b1a9722febd02edb113cc", "transcript": "Agent: Thanks for calling Sunrise Dental, this is the virtual assistant. How can I help you today?\nCaller: I need to cancel my appointment on Friday, November 6 at 8:30 AM.\nAgent: Sure. Can I get your name and the phone number on your account?\nCaller: Paul Brennan, it's the number ending 7173.\nAgent: Thanks, Paul. I found your account.\nAgent: I've cancelled your appointment on Friday, November 6 at 8:30 AM. Would you like to book a new one?\nCaller: No, not right now. Thanks.\nAgent: No problem. Take care."}, {"id": "call_00297", "cust": "cust_a", "name": "Sunrise Dental", "at": "2026-10-31 11:43", "day": "Sat 31 Oct", "time": "11:43", "dur": 144, "caller": "Tom Chen", "last4": "9745", "intent": "book_new", "outcome": "booked", "appt": "apt_251870f74c", "sync": "failed", "code": "401", "attempts": 3, "dup": false, "sid": "CAa9bdc4a271853ce36f11809457eed2e1", "transcript": "Agent: Thanks for calling Sunrise Dental, this is the virtual assistant. How can I help you today?\nCaller: Can I get a checkup with Dr. Alvarez?\nAgent: Sure. Can I get your name and the phone number on your account?\nCaller: Tom Chen, it's the number ending 9745.\nAgent: Thanks, Tom. I found your account.\nAgent: I have Monday, November 2 at 11:45 AM with Dr. Alvarez. Does that work for you?\nCaller: Yes, that works.\nAgent: Great, your appointment is confirmed with Dr. Alvarez on Monday, November 2 at 11:45 AM. You'll get a text reminder the day before.\nCaller: Thank you!\nAgent: You're welcome. Have a great day."}]</script>
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const DATA = JSON.parse($('#sample').textContent);
+  const byId = Object.fromEntries(DATA.map((d) => [d.id, d]));
+  const CUST = { cust_a: 'Sunrise Dental', cust_b: 'Lakeside Auto', cust_c: 'Maple Hair' };
+
+  /* toast */
+  let toastTimer;
+  const toast = (msg, undo) => {
+    const t = $('#toast');
+    $('#toast-msg').textContent = msg;
+    $('#toast-undo').hidden = !undo;
+    $('#toast-undo').onclick = () => { t.hidden = true; if (undo) undo(); };
+    t.hidden = false; t.classList.remove('is-in'); void t.offsetWidth; t.classList.add('is-in');
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 5000);
+  };
+
+  /* swatches copy */
+  $$('[data-copy]').forEach((b) => b.addEventListener('click', () => {
+    const v = b.dataset.copy;
+    (navigator.clipboard ? navigator.clipboard.writeText(v) : Promise.reject()).then(() => toast('Copied ' + v), () => toast('Token: ' + v));
+  }));
+
+  /* scroll spy */
+  const links = $$('.topnav a[href^="#"]');
+  const io = new IntersectionObserver((es) => es.forEach((e) => {
+    if (e.isIntersecting) links.forEach((a) => a.setAttribute('aria-current', String(a.getAttribute('href') === '#' + e.target.id)));
+  }), { rootMargin: '-40% 0px -55% 0px' });
+  $$('main section[id]').forEach((s) => io.observe(s));
+
+  /* force states */
+  const targets = $$('#force-targets .btn');
+  const out = $('#force-out');
+  const STATES = ['is-hover', 'is-focus', 'is-active', 'is-disabled', 'is-loading', 'is-error', 'is-success'];
+  const TEXT = { 'is-loading': 'Replaying', 'is-error': 'Replay failed', 'is-success': 'Replayed' };
+  const NOTE = { '': 'Default: resting state.', 'is-hover': 'Hover: one step lighter, the primary gains a soft periwinkle ring.', 'is-focus': 'Focus: 2px accent ring, instant.', 'is-active': 'Pressed: 1px down.', 'is-disabled': 'Disabled: 55% opacity, not-allowed cursor.', 'is-loading': 'Loading: spinner beside the label, still readable.', 'is-error': 'Error: apricot ring, the label says what failed.', 'is-success': 'Success: deep periwinkle, past tense label.' };
+  $$('#force input').forEach((r) => r.addEventListener('change', () => {
+    targets.forEach((b) => { b.classList.remove(...STATES); if (r.value) b.classList.add(r.value); b.textContent = TEXT[r.value] && b.id === 'retry-demo' ? TEXT[r.value] : b.dataset.label; });
+    out.textContent = NOTE[r.value];
+  }));
+  let flip = false;
+  $('#retry-demo').addEventListener('click', (e) => {
+    const b = e.currentTarget;
+    if (b.getAttribute('aria-busy') === 'true' || b.classList.contains('is-disabled')) return;
+    b.classList.remove(...STATES); b.setAttribute('aria-busy', 'true'); b.textContent = 'Replaying'; out.textContent = 'Loading.';
+    setTimeout(() => {
+      b.removeAttribute('aria-busy'); flip = !flip;
+      b.classList.add(flip ? 'is-success' : 'is-error');
+      b.textContent = flip ? 'Replayed' : 'Replay failed';
+      out.textContent = flip ? 'Success: 24 writes queued for replay.' : 'Error: BookWell still rejects the token. Fix credentials first.';
+      setTimeout(() => { b.classList.remove('is-success', 'is-error'); b.textContent = b.dataset.label; }, 2400);
+    }, 1100);
+  });
+
+  /* clear buttons on search */
+  $$('.input-wrap').forEach((w) => {
+    const i = $('input', w), c = $('.clear', w);
+    const sync = () => { c.hidden = !i.value; };
+    i.addEventListener('input', sync);
+    c.addEventListener('click', () => { i.value = ''; sync(); i.dispatchEvent(new Event('input', { bubbles: true })); i.focus(); });
+  });
+
+  /* date range validation demo */
+  const dFrom = $('#d-from'), dTo = $('#d-to'), dHelp = $('#d-range-help');
+  const checkRange = () => {
+    const bad = dFrom.value && dTo.value && dTo.value < dFrom.value;
+    dTo.setAttribute('aria-invalid', String(!!bad));
+    dHelp.className = 'help' + (bad ? ' help--error' : ' help--ok');
+    dHelp.textContent = bad ? 'To is before From. Pick a later end date.' : 'Range is valid.';
+  };
+  dFrom.addEventListener('change', checkRange); dTo.addEventListener('change', checkRange);
+
+  /* chips and switches (generic) */
+  document.addEventListener('click', (e) => {
+    const chip = e.target.closest('.chip');
+    if (chip && !chip.disabled) chip.setAttribute('aria-pressed', String(chip.getAttribute('aria-pressed') !== 'true'));
+    const sw = e.target.closest('.switch');
+    if (sw && !sw.disabled) sw.setAttribute('aria-checked', String(sw.getAttribute('aria-checked') !== 'true'));
+  });
+
+  /* tabs with arrow keys */
+  $$('[data-tabs]').forEach((root) => {
+    const tabs = $$('[role="tab"]', root);
+    const select = (t, focus) => {
+      tabs.forEach((x) => { const on = x === t; x.setAttribute('aria-selected', String(on)); x.tabIndex = on ? 0 : -1; document.getElementById(x.getAttribute('aria-controls')).hidden = !on; });
+      if (focus) t.focus();
+    };
+    tabs.forEach((t, i) => {
+      t.addEventListener('click', () => select(t));
+      t.addEventListener('keydown', (e) => {
+        const k = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
+        if (k) { e.preventDefault(); select(tabs[(i + k + tabs.length) % tabs.length], true); }
+        if (e.key === 'Home') { e.preventDefault(); select(tabs[0], true); }
+        if (e.key === 'End') { e.preventDefault(); select(tabs[tabs.length - 1], true); }
+      });
+    });
+    root._select = (n) => select(tabs[n]);
+  });
+
+  /* explorer */
+  const form = $('#filter-form'), tbody = $('#calls tbody'), rows = $$('#calls tbody tr');
+  const dupSw = $('#f-dup');
+  const pressed = (g) => $$(`[data-group="${g}"] .chip[aria-pressed="true"]`).map((c) => c.value);
+  const setPressed = (g, vals) => $$(`[data-group="${g}"] .chip`).forEach((c) => c.setAttribute('aria-pressed', String(vals.includes(c.value))));
+  const state = () => ({
+    q: $('#f-q').value.trim().toLowerCase(), from: $('#f-from').value, to: $('#f-to').value, intent: $('#f-intent').value,
+    cust: (form.querySelector('input[name="cust"]:checked') || {}).value || '', outcome: pressed('outcome'), write: pressed('write'),
+    dups: dupSw.getAttribute('aria-checked') !== 'true'
+  });
+  const apply = () => {
+    const s = state();
+    let n = 0;
+    rows.forEach((r) => {
+      const d = r.dataset;
+      const ok = (!s.q || d.search.includes(s.q)) && (!s.from || d.date >= s.from) && (!s.to || d.date <= s.to) && (!s.intent || d.intent === s.intent)
+        && (!s.cust || d.cust === s.cust) && (!s.outcome.length || s.outcome.includes(d.outcome)) && (!s.write.length || s.write.includes(d.write)) && (s.dups || d.dup !== 'true');
+      r.hidden = !ok; if (ok) n++;
+    });
+    $('#count').innerHTML = `<b>${n}</b> of ${rows.length} sample calls`;
+    $('#table-region').hidden = n === 0; $('#table-empty').hidden = n !== 0;
+    const p = new URLSearchParams();
+    if (s.q) p.set('q', s.q); if (s.from) p.set('from', s.from); if (s.to) p.set('to', s.to); if (s.intent) p.set('intent', s.intent); if (s.cust) p.set('cust', s.cust);
+    if (s.outcome.length) p.set('outcome', s.outcome.join(',')); if (s.write.length) p.set('write', s.write.join(',')); if (s.dups) p.set('dups', '1');
+    try { history.replaceState(null, '', (p.toString() ? '?' + p : location.pathname) + location.hash); } catch (e) { /* file URLs may refuse; filters still work */ }
+  };
+  const restore = () => {
+    let p; try { p = new URLSearchParams(location.search); } catch (e) { return; }
+    $('#f-q').value = p.get('q') || ''; $('#f-from').value = p.get('from') || ''; $('#f-to').value = p.get('to') || ''; $('#f-intent').value = p.get('intent') || '';
+    const c = form.querySelector(`input[name="cust"][value="${p.get('cust') || ''}"]`); if (c) c.checked = true;
+    setPressed('outcome', (p.get('outcome') || '').split(',')); setPressed('write', (p.get('write') || '').split(','));
+    dupSw.setAttribute('aria-checked', String(p.get('dups') !== '1'));
+    $$('.input-wrap').forEach((w) => { $('.clear', w).hidden = !$('input', w).value; });
+  };
+  form.addEventListener('input', apply);
+  form.addEventListener('change', apply);
+  form.addEventListener('click', (e) => { if (e.target.closest('.chip, .switch')) setTimeout(apply); });
+  const reset = () => { form.reset(); setPressed('outcome', []); setPressed('write', []); dupSw.setAttribute('aria-checked', 'true'); $$('.input-wrap .clear', form).forEach((c) => { c.hidden = true; }); apply(); };
+  form.addEventListener('reset', (e) => { e.preventDefault(); reset(); });
+  $$('[data-reset]').forEach((b) => b.addEventListener('click', reset));
+  const preset = () => { reset(); setPressed('outcome', ['booked', 'rescheduled', 'cancelled']); setPressed('write', ['failed']); apply(); toast('Filtered to calls the agent confirmed but the booking system never accepted.'); };
+  $('#f-preset').addEventListener('click', preset);
+  $$('[data-preset]').forEach((a) => a.addEventListener('click', () => preset()));
+
+  let asc = true;
+  $('#sort-time').addEventListener('click', () => {
+    asc = !asc;
+    rows.sort((a, b) => (a.dataset.at < b.dataset.at ? -1 : 1) * (asc ? 1 : -1)).forEach((r) => tbody.appendChild(r));
+    $('#sort-time').closest('th').setAttribute('aria-sort', asc ? 'ascending' : 'descending');
+    $('#sort-ind').textContent = asc ? 'asc' : 'desc';
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === '/' && !e.target.closest('input, select, textarea, dialog')) { e.preventDefault(); $('#filters').open = true; $('#f-q').focus(); }
+  });
+
+  /* drawer */
+  const drawer = $('#drawer');
+  let opener = null;
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const openCall = (id, from) => {
+    const d = byId[id]; if (!d) return;
+    opener = from || document.activeElement;
+    rows.forEach((r) => r.classList.toggle('is-open', r.dataset.id === id));
+    $('#dr-title').textContent = d.id;
+    $('#dr-sub').textContent = `${d.name}, ${d.day} ${d.time} local, ${d.dur}s`;
+    const said = ['booked', 'rescheduled', 'cancelled'].includes(d.outcome);
+    const v = $('#dr-verdict');
+    v.className = 'verdict' + (d.sync === 'failed' ? ' verdict--bad' : '');
+    v.innerHTML = d.sync === 'failed'
+      ? `<b>Said ${esc(d.outcome)}, not written.</b><span>${d.attempts} attempts, HTTP ${esc(d.code)} invalid_token, dead-lettered. The caller believes this happened.</span>`
+      : d.sync === 'written' ? `<b>Said ${esc(d.outcome)}, written.</b><span>Booking system returned ${esc(d.code)}.</span>`
+      : `<b>${said ? 'No write found.' : 'No write needed.'}</b><span>Outcome ${esc(d.outcome)}.</span>`;
+    const facts = [['Customer', d.name], ['Caller', `${d.caller}, ends ${d.last4}`], ['Intent', d.intent], ['Outcome', d.outcome], ['Appointment', d.appt || 'none'], ['Telephony id', d.sid], ['Duplicate', d.dup ? 'yes, hidden by default' : 'no'], ['Write', d.sync]];
+    $('#dr-facts').innerHTML = facts.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('');
+    $('#dr-transcript').innerHTML = d.transcript.split('\n').map((l) => {
+      const m = l.match(/^(Agent|Caller):\s*(.*)$/);
+      return m ? `<li><span class="who">${m[1]}</span><span>${esc(m[2])}</span></li>` : `<li><span class="sys">${esc(l)}</span></li>`;
+    }).join('');
+    const { transcript, ...rest } = d;
+    $('#dr-record').textContent = JSON.stringify(rest, null, 2);
+    $('[data-tabs]', drawer)._select(0);
+    if (!drawer.open) drawer.showModal();
+    $('[data-close]', drawer).focus();
+  };
+  drawer.addEventListener('close', () => { rows.forEach((r) => r.classList.remove('is-open')); if (opener && opener.focus) opener.focus(); });
+  $('[data-close]', drawer).addEventListener('click', () => drawer.close());
+  drawer.addEventListener('click', (e) => { if (e.target === drawer) drawer.close(); });
+  tbody.addEventListener('click', (e) => { const r = e.target.closest('tr'); if (r) openCall(r.dataset.id, $('.open', r)); });
+  $$('[data-open]').forEach((b) => b.addEventListener('click', () => openCall(b.dataset.open, b)));
+
+  /* confirm and toast demos */
+  const confirmD = $('#confirm');
+  $('#open-confirm').addEventListener('click', () => confirmD.showModal());
+  confirmD.addEventListener('close', () => { if (confirmD.returnValue === 'ok') toast('24 writes queued for replay.', () => toast('Replay cancelled. 24 writes stay queued.')); });
+  $('#open-toast').addEventListener('click', () => toast('Filters saved to the URL. Share it to share this view.', () => toast('Undone.')));
+
+  /* data state switcher */
+  $$('#state-pick input').forEach((r) => r.addEventListener('change', () => {
+    $$('[data-state]').forEach((p) => { p.hidden = p.dataset.state !== r.value; });
+  }));
+
+  restore(); apply();
+})();
+</script>
+</body>
+</html>
