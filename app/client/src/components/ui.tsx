@@ -203,7 +203,9 @@ export function Markdown({ text }: { text: string }) {
     const h = line.match(/^(#{1,4})\s+(.*)$/);
     if (h) { blocks.push(<h4 key={key++}>{inline(h[2], `hh${key}`)}</h4>); i++; continue; }
     if (!line.trim()) { i++; continue; }
-    const para: string[] = [];
+    // A paragraph always takes its first line, so a lone table row (e.g. a header streamed before its
+    // separator line) can never leave `i` unchanged and spin this loop forever.
+    const para: string[] = [lines[i++]];
     while (i < lines.length && lines[i].trim() && !lines[i].startsWith('```') && !/^\s*([-*]|\d+\.)\s+/.test(lines[i]) && !/^#{1,4}\s/.test(lines[i]) && !/^\s*\|.*\|\s*$/.test(lines[i])) para.push(lines[i++]);
     blocks.push(<p key={key++}>{inline(para.join('\n'), `p${key}`)}</p>);
   }
